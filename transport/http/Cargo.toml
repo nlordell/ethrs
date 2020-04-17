@@ -1,0 +1,8 @@
+[package]
+name = "ethrs-transport-http"
+version = "0.1.0"
+authors = ["Nicholas Rodrigues Lordello <nicholas.lordello@gnosis.pm>"]
+edition = "2018"
+
+[dependencies]
+ethrs-transport-common = { path = "../common", version = "0.1.0" }
