@@ -12,8 +12,9 @@
 //#![deny(missing_docs)]
 
 #[macro_use]
-mod namespace;
+pub mod module;
 
+pub mod encoding;
 mod fmt;
 pub mod jsonrpc;
 
