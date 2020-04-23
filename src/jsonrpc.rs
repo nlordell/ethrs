@@ -3,4 +3,4 @@
 mod client;
 mod data;
 
-pub use client::Client;
+pub use client::{Client, ClientError};

@@ -11,12 +11,13 @@
 
 //#![deny(missing_docs)]
 
-#[macro_use]
-pub mod module;
-
 pub mod encoding;
+#[macro_use]
+pub mod ethereum;
 mod fmt;
 pub mod jsonrpc;
+
+pub use ethereum::Web3;
 
 /// Module re-exporting transport implementations included via features.
 pub mod transport {
@@ -24,8 +25,11 @@ pub mod transport {
 
     #[cfg(feature = "http")]
     pub use ethrs_transport_http as http;
+
     #[cfg(feature = "mock")]
     pub use ethrs_transport_mock as mock;
+    #[cfg(feature = "mock")]
+    pub use ethrs_transport_mock::MockTransport;
 }
 
 #[cfg(test)]

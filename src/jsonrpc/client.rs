@@ -18,10 +18,7 @@ pub struct Client<T> {
     buffer_pool: Dbg<Pool<Vec<u8>>>,
 }
 
-impl<T> Client<T>
-where
-    T: Transport,
-{
+impl<T> Client<T> {
     /// Create a new client over the specified transport.
     pub fn new(transport: T) -> Self {
         Client {
@@ -34,7 +31,12 @@ where
                 .into(),
         }
     }
+}
 
+impl<T> Client<T>
+where
+    T: Transport,
+{
     pub async fn call<P, R>(&mut self, method: &str, params: P) -> Result<R, ClientError<T::Error>>
     where
         P: Serialize,

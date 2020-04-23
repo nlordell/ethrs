@@ -8,12 +8,34 @@ use std::fmt::{self, LowerHex};
 use std::marker::PhantomData;
 use std::num::ParseIntError;
 
+/// A trait for decoding a JSON RPC result into an API result. This is used for
+/// using proxy types for doing deserialization (such as
+/// [`ethrs::encoding::Data`]).
+///
+/// Note this trait is similar to [`std::convert::From`] while allowing
+/// implementations on foreign types.
+pub trait Decode<T> {
+    fn decode(encoded: T) -> Self;
+}
+
+impl<T> Decode<T> for T {
+    fn decode(encoded: T) -> Self {
+        encoded
+    }
+}
+
 /// A type wrapper around byte data that gets serialized as a hex string.
 pub struct Data<T>(pub T);
 
 impl<T> From<T> for Data<T> {
     fn from(inner: T) -> Self {
         Data(inner)
+    }
+}
+
+impl<T> Decode<Data<T>> for T {
+    fn decode(encoded: Data<T>) -> Self {
+        encoded.0
     }
 }
 
@@ -73,6 +95,12 @@ pub struct Quantity<T>(pub T);
 impl<T> From<T> for Quantity<T> {
     fn from(inner: T) -> Self {
         Quantity(inner)
+    }
+}
+
+impl<T> Decode<Quantity<T>> for T {
+    fn decode(encoded: Quantity<T>) -> Self {
+        encoded.0
     }
 }
 

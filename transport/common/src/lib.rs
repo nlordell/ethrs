@@ -1,8 +1,6 @@
 //! This module contains trait and type definitions needed for implementing
 //! `ethrs` transports.
 
-#![deny(missing_docs)]
-
 use std::error::Error;
 use std::future::Future;
 
@@ -15,6 +13,7 @@ use std::future::Future;
 pub trait Transport {
     /// Error type that this transport produces.
     type Error: Error;
+
     /// Future returned by the `call` method.
     type Call: Future<Output = Result<(), Self::Error>>;
 
