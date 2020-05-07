@@ -88,6 +88,10 @@ where
     }
 }
 
+/// Module for `#[serde(with = ...)]` to perform serialization with the
+/// [`ethrs::encoding::Data`] type wrapper.
+pub mod data {}
+
 /// A type wrapper around primitive integer quantities that get serialized as
 /// hex strings.
 pub struct Quantity<T>(pub T);
@@ -149,12 +153,35 @@ where
                     return Err(de::Error::custom("hex number contains leading 0s"));
                 }
 
-                T::from_str_radix(&s[2..], 16).map_err(de::Error::custom)
+                T::from_str_radix(s, 16).map_err(de::Error::custom)
             }
         }
 
-        let buffer = deserializer.deserialize_str(QuantityVisitor(PhantomData))?;
-        Ok(Quantity(buffer))
+        let value = deserializer.deserialize_str(QuantityVisitor(PhantomData))?;
+        Ok(Quantity(value))
+    }
+}
+
+/// Module for `#[serde(with = ...)]` to perform serialization with the
+/// [`ethrs::encoding::Quantity`] type wrapper.
+pub mod quantity {
+    use super::*;
+
+    pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        T: LowerHex,
+        S: Serializer,
+    {
+        Quantity(value).serialize(serializer)
+    }
+
+    pub fn deserialize<'de, T, D>(deserializer: D) -> Result<T, D::Error>
+    where
+        T: FromStrRadix,
+        T::Error: fmt::Display,
+        D: Deserializer<'de>,
+    {
+        Ok(Quantity::<T>::deserialize(deserializer)?.0)
     }
 }
 

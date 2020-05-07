@@ -11,7 +11,6 @@
 
 //#![deny(missing_docs)]
 
-pub mod encoding;
 #[macro_use]
 pub mod ethereum;
 mod fmt;
@@ -30,12 +29,4 @@ pub mod transport {
     pub use ethrs_transport_mock as mock;
     #[cfg(feature = "mock")]
     pub use ethrs_transport_mock::MockTransport;
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
 }

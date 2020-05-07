@@ -2,7 +2,7 @@
 //! that can be used for unit testing.
 
 use ethrs_transport_common::Transport;
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::collections::VecDeque;
 use std::future::Future;
 use std::pin::Pin;
@@ -21,14 +21,68 @@ impl MockTransport {
         &mut self,
         method: impl Into<String>,
         params: Value,
-        result: Result<Value, impl Into<String>>,
+        result: Result<Value, String>,
     ) -> &mut Self {
-        self.calls.push_back((
-            method.into(),
-            params,
-            result.map_err(|msg| Error(msg.into())),
-        ));
+        self.calls
+            .push_back((method.into(), params, result.map_err(Error)));
         self
+    }
+
+    /// Check call to the mock transport.
+    fn call_inner(&mut self, request: &[u8], response: &mut Vec<u8>) -> Result<(), Error> {
+        /// Macro for construcing a mock transport error.
+        macro_rules! error {
+            ($($x:tt)*) => {
+                Error(format!($($x)*))
+            }
+        };
+        macro_rules! ensure_eq {
+            ($actual:expr, $expected:expr, $msg:expr) => {{
+                let (actual, expected) = (&$actual, &$expected);
+                if actual != expected {
+                    return Err(error!(
+                        "{}, got {:?} but expected {:?}",
+                        $msg, actual, expected,
+                    ));
+                }
+            }};
+        };
+
+        let request = serde_json::from_slice::<Value>(request).map_err(|err| {
+            error!(
+                "invalid request JSON '{}': {}",
+                String::from_utf8_lossy(request),
+                err,
+            )
+        })?;
+
+        let (method, expected, result) = self
+            .calls
+            .pop_front()
+            .ok_or_else(|| error!("unexpected '{}' request", request["method"]))?;
+        ensure_eq!(request["method"], method, "unexpected method");
+        ensure_eq!(request["params"], expected, "unexpected parameters");
+
+        let json = match result {
+            Ok(result) => json!({
+                "jsonrpc": "2.0",
+                "result": result,
+                "id": request["id"],
+            }),
+            Err(err) => json!({
+                "jsonrpc": "2.0",
+                "error": {
+                    "code": -32000,
+                    "error": err.0,
+                    "data": {},
+                },
+                "id": request["id"],
+            }),
+        };
+        serde_json::to_writer(response, &json)
+            .map_err(|err| error!("error serializing response JSON: {}", err))?;
+
+        Ok(())
     }
 }
 
@@ -37,23 +91,7 @@ impl Transport for MockTransport {
     type Call = Ready<Result<(), Error>>;
 
     fn call(&mut self, request: &[u8], response: &mut Vec<u8>) -> Self::Call {
-        let request = serde_json::from_slice::<Value>(request).unwrap_or_else(|_| {
-            panic!(
-                "invalid request JSON '{}'",
-                String::from_utf8_lossy(request)
-            )
-        });
-
-        let (method, expected, result) = self
-            .calls
-            .pop_front()
-            .unwrap_or_else(|| panic!("unexpected '{}' request", request["method"]));
-        assert_eq!(request["method"], method);
-        assert_eq!(request["params"], expected);
-
-        Ready::new(result.map(|value| {
-            serde_json::to_writer(response, &value).unwrap();
-        }))
+        Ready::new(self.call_inner(request, response))
     }
 }
 

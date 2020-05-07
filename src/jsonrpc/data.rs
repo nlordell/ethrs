@@ -72,7 +72,7 @@ struct RawResponse<R> {
 
 /// An RPC error that may be produced on a response.
 #[derive(Debug, Deserialize, Error)]
-#[error("{code}: {}")]
+#[error("{code}: {error}")]
 #[serde(deny_unknown_fields)]
 pub struct Error {
     pub code: ErrorCode,

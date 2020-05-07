@@ -47,7 +47,7 @@ macro_rules! api {
                     __api!(ser: $param ; $param_type $([ $param_serde ])*),
                 )*);
 
-                let result = <$result_type as $crate::encoding::Decode<
+                let result = <$result_type as $crate::ethereum::encoding::Decode<
                     __api!(de: $result_type $([ $result_serde ])*),
                 >>::decode(
                     self.provider()
@@ -91,24 +91,26 @@ macro_rules! __api {
 macro_rules! api_test {
     ($(
         $method_name:ident as $ns:ident :: $call:ident {$(
-            ($($param:expr),*): $request:expr => $response:expr
+            ($($param:expr),*): $request:expr => $response:expr ,== $expected:expr ;
         )*}
-    )*) => {
+    )*) => {$(
         #[test]
+        #[allow(unused_mut, unused_variables)]
         fn $call() {
             use $crate::transport::MockTransport;
 
             let mut transport = MockTransport::default();
-            transport$(
-                .expect_call(stringify!($method_name), $request, Ok($response))
-            )*;
+            $(
+                transport.expect_call(stringify!($method_name), $request, Ok($response));
+            )*
 
             let provider = Provider::new(transport);
-            let mut api = <$ns>(provider);
+            let mut api = $ns(provider);
 
-            $(
-                api.$call($($param),*);
-            )*
+            futures::executor::block_on(async move {$(
+                let result = api.$call($($param),*).await.unwrap();
+                assert_eq!(result, $expected);
+            )*});
         }
-    };
+    )*};
 }
