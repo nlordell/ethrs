@@ -6,6 +6,7 @@ edition = "2018"
 
 [workspace]
 members = [
+  "num",
   "transport/common",
   "transport/http",
   "transport/mock",

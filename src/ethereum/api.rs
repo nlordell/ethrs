@@ -43,9 +43,9 @@ macro_rules! api {
             pub async fn $method(&mut self, $(
                 $param: $param_type,
             )*) -> Result<$result_type, $crate::ethereum::ApiError<T>> {
-                let params = ($(
+                let params = __api!(params: ($(
                     __api!(ser: $param ; $param_type $([ $param_serde ])*),
-                )*);
+                )*));
 
                 let result = <$result_type as $crate::ethereum::encoding::Decode<
                     __api!(de: $result_type $([ $result_serde ])*),
@@ -71,6 +71,13 @@ macro_rules! api {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __api {
+    (params: ()) => {
+        [(); 0]
+    };
+    (params: ($($p:expr,)*)) => {
+        ($($p,)*)
+    };
+
     (ser: $value:expr ; $type:ty) => {
         $value
     };

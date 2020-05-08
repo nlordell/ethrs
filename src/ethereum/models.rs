@@ -4,6 +4,12 @@
 use super::encoding::quantity;
 use serde::{Deserialize, Serialize};
 
+/// A 32-byte hash.
+pub type Hash = [u8; 32];
+
+/// A 20-byte Ethereum address.
+pub type Address = [u8; 20];
+
 /// Sync status data.
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Syncing {
