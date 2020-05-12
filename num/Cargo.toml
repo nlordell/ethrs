@@ -5,7 +5,15 @@ authors = ["Nicholas Rodrigues Lordello <nicholas.lordello@gnosis.pm>"]
 edition = "2018"
 build = "build/main.rs"
 
+[[bench]]
+name = "num"
+harness = false
+
 [dependencies]
+
+[dev-dependencies]
+criterion = "^0.3.2"
+primitive-types = "^0.7.2"
 
 [build-dependencies]
 cc = "^1.0.52"

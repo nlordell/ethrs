@@ -14,6 +14,15 @@ intrinsics! {
     add_sat = (r, a, b) => { *r = a.saturating_add(*b) }
     add_assign = (r, a) => { *r += *a }
 
+    mul = (r, a, b) => { *r = *a * *b }
+    mul_overflow = (r, a, b): bool => {
+        let (c, overflow) = a.overflowing_mul(*b);
+        *r = c;
+        overflow
+    }
+    mul_sat = (r, a, b) => { *r = a.saturating_mul(*b) }
+    mul_assign = (r, a) => { *r *= *a }
+
     sub = (r, a, b) => { *r = *a - *b }
     sub_overflow = (r, a, b): bool => {
         let (c, overflow) = a.overflowing_sub(*b);

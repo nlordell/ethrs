@@ -1,5 +1,5 @@
 /// This module contains the `intrinsics` macro definition used for generating
-/// an LLVM IR for `i128` intrinsics which is used as a template `u256`.
+/// an LLVM IR for `u128` intrinsics which is used as a template `u256`.
 ///
 /// This is done instead of hand-writting LLVM IR to ensure that the attributes
 /// on functions and parameters are as accurate as possible for the resulting
@@ -15,7 +15,7 @@ macro_rules! intrinsics {
         export! {
             concat!("__ethrs_num_", stringify!($name));
             pub extern "C" fn $name(
-                $r: &mut i128,
+                $r: &mut u128,
                 $( $p: ty!(param: $($pt)?), )*
             ) -> ty!(ret: $($ret)?) {
                 $block
@@ -33,7 +33,7 @@ macro_rules! export {
 
 macro_rules! ty {
     (param:) => {
-        &i128
+        &u128
     };
     (param: $t:ty) => {
         $t
