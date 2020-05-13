@@ -87,6 +87,18 @@ macro_rules! __impl_prim_binop {
 */
 
 /*
+overflowing_add
+overflowing_div
+overflowing_div_euclid
+overflowing_mul
+overflowing_neg
+overflowing_pow
+overflowing_rem
+overflowing_rem_euclid
+overflowing_shl
+overflowing_shr
+overflowing_sub
+
 @str.0 = internal constant [33 x i8] c"attempt to multiply with overflow"
 @str.1 = internal constant [28 x i8] c"attempt to add with overflow"
 @str.2 = internal constant [25 x i8] c"attempt to divide by zero"
