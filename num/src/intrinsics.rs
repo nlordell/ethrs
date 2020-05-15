@@ -69,7 +69,7 @@ mod tests {
     #[test]
     fn unchecked_addition() {
         let mut res = u256::default();
-        add(&mut res, &u256([1, 2, 3, 4]), &u256([3, 2, 1, 0]));
-        assert_eq!(res, u256([4, 4, 4, 4]),);
+        add(&mut res, &u256([1, 2]), &u256([3, 0]));
+        assert_eq!(res, u256([4, 2]),);
     }
 }
