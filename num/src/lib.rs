@@ -34,3 +34,8 @@ impl u256 {
         unsafe { MaybeUninit::uninit().assume_init() }
     }
 }
+
+// TODO(nlordell):
+// - Use `clang` with `-flto=thin` and `lld` when available, allowing the
+//   inlining of the addition and subtraction routines.
+// - Base arithmetic traits on `overflowing_*` and `wrapping_*`.
