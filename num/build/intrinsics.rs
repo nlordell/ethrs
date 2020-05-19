@@ -1,13 +1,18 @@
+//! Module containing code for generating intrinsics.
+
 #[allow(dead_code)]
 mod template;
 
+use crate::Result;
 use std::env;
-use std::error::Error;
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 
-pub fn source() -> Result<PathBuf, Box<dyn Error>> {
+/// Gets a path source for the integer intrinsics. This will either be a
+/// pre-generated assembly source, or, in case it does not exist, a freshly
+/// generated one.
+pub fn source() -> Result<PathBuf> {
     let path = match find()? {
         Some(found) => found,
         None => generate()?,
@@ -16,9 +21,9 @@ pub fn source() -> Result<PathBuf, Box<dyn Error>> {
     Ok(path)
 }
 
-fn find() -> Result<Option<PathBuf>, Box<dyn Error>> {
+/// Looks for a pre-generated intrinsics source.
+fn find() -> Result<Option<PathBuf>> {
     let target = env::var("TARGET")?;
-
     for file in fs::read_dir("src/arch")? {
         let file = file?;
         if target.starts_with(&*file.file_name().to_string_lossy()) {
@@ -30,7 +35,10 @@ fn find() -> Result<Option<PathBuf>, Box<dyn Error>> {
     Ok(None)
 }
 
-fn generate() -> Result<PathBuf, Box<dyn Error>> {
+/// Generates assembly for LLVM IR integer intrinsics. This enables the crate to
+/// use compiler generated `u256` operations (such as addition, multiplication)
+/// instead of implementing by hand.
+fn generate() -> Result<PathBuf> {
     let out_dir = PathBuf::from(env::var("OUT_DIR")?);
 
     let template = {

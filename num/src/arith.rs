@@ -1,49 +1,39 @@
 //! Module containing macros for implementing [`std::ops`] traits.
 
+use crate::intrinsics::*;
+use crate::u256;
+
 macro_rules! impl_binops {
     ($(
         $op:ident {
-            $method:ident,
-            $overflow:ident $msg:expr
+            $method:ident =>
+            $wrap:path,
+            $overflow:path; $msg:expr
         }
     )*) => {$(
-        impl std::ops::$op<&'_ $crate::u256> for &'_ $crate::u256 {
-            type Output = $crate::u256;
+        impl std::ops::$op<&'_ u256> for &'_ u256 {
+            type Output = u256;
 
-            fn $method(self, rhs: &'_ $crate::u256) -> Self::Output {
-                __binop!($method, $overflow [ self, rhs ] $msg)
+            #[inline(always)]
+            fn $method(self, rhs: &'_ u256) -> Self::Output {
+                binop!($wrap, $overflow [ self, rhs ] $msg)
             }
         }
 
-        __impl_ref_binop! {
-            $op <&$crate::u256 ; &$crate::u256>::$method {
-                <$crate::u256> for &'_ $crate::u256;
-                <&'_ $crate::u256> for $crate::u256;
-                <$crate::u256> for $crate::u256;
-            }
-        }
-
-        /*
-        __impl_prim_binop! {
-            $op <&$crate::u256 ; $crate::u256>::$method {
-                i8, i16, i32, i64, i128,
-                u8, u16, u32, u64, u128,
-            }
-        }
-        */
+        impl_auto_binop!($op { $method });
     )*};
 }
 
-macro_rules! __binop {
-    ($wrap:ident, $overflow:ident [ $lhs:expr, $rhs:expr ] $msg:expr) => {{
+macro_rules! binop {
+    ($wrap:path, $overflow:path [ $lhs:expr, $rhs:expr ] $msg:expr) => {{
         let mut result = u256::uninit();
         #[cfg(not(debug_assertions))]
         {
-            $crate::intrinsics::$wrap(&mut result, $lhs, $rhs);
+            $wrap(&mut result, $lhs, $rhs);
         }
         #[cfg(debug_assertions)]
         {
-            let overflow = $crate::intrinsics::$overflow(&mut result, $lhs, $rhs);
+            let overflow = $overflow(&mut result, $lhs, $rhs);
             if overflow {
                 panic!(concat!("attempt to ", $msg));
             }
@@ -52,59 +42,128 @@ macro_rules! __binop {
     }};
 }
 
-macro_rules! __impl_ref_binop {
+macro_rules! impl_auto_binop {
+    ($op:ident { $method:ident }) => {
+        impl_ref_binop! {
+            $op <&u256 ; &u256>::$method (rhs) {
+                <u256> for &'_ u256 => { &rhs }
+                <&'_ u256> for u256 => { rhs }
+                <u256> for u256 => { &rhs }
+            }
+        }
+
+        impl_ref_binop! {
+            $op <&u256 ; u256>::$method (rhs) { u128 } => { u256::new(rhs) }
+        }
+    };
+}
+
+macro_rules! impl_ref_binop {
     (
-        $op:ident <$ref:ty ; $tr:ty> :: $method:ident {$(
-            <$rhs:ty> for $lhs:ty;
+        $op:ident <$ref:ty ; $tr:ty> :: $method:ident ($x:ident) {$(
+            <$rhs:ty> for $lhs:ty => $conv:block
         )*}
     ) => {$(
         impl std::ops::$op<$rhs> for $lhs {
-            type Output = $crate::u256;
+            type Output = u256;
 
-            fn $method(self, rhs: $rhs) -> Self::Output {
-                <$ref as std::ops::$op<$tr>>::$method(&self, &rhs)
+            #[inline(always)]
+            fn $method(self, $x: $rhs) -> Self::Output {
+                <$ref as std::ops::$op<$tr>>::$method(&self, $conv)
+            }
+        }
+    )*};
+    (
+        $op:ident <$ref:ty ; $tr:ty> :: $method:ident ($x:ident) {
+            $($rhs:ty),* $(,)?
+        } => $conv:block
+    ) => {$(
+        impl_ref_binop! {
+            $op <&u256 ; $tr>::$method (rhs) {
+                <&'_ $rhs> for &'_ u256 => { let $x = *rhs; $conv }
+                <&'_ $rhs> for u256 => { let $x = *rhs; $conv }
+                <$rhs> for &'_ u256 => { let $x = rhs; $conv }
+                <$rhs> for u256 => { let $x = rhs; $conv }
             }
         }
     )*};
 }
 
-/*
-macro_rules! __impl_prim_binop {
-    (
-        $op:ident <$ref:ty ; $tr:ty> :: $method:ident {$(
-            <$rhs:ty> for $lhs:ty;
-        )*}
-    ) => {$(
-        impl std::ops::$op<$rhs> for $lhs {
-            type Output = $crate::u256;
+impl_binops! {
+    Add { add => add3, addc; "add with overflow" }
+    Sub { sub => sub3, subc; "subtract with overflow" }
+    Mul { mul => mul3, mulc; "multiply with overflow" }
+}
 
-            fn $method(self, rhs: $rhs) -> Self::Output {
-                <$ref as std::ops::$op<$tr>>::$method(&self, &rhs)
+macro_rules! impl_shifts {
+    ($(
+        $op:ident {
+            $method:ident =>
+            $wrap:path; $msg:expr
+        }
+    )*) => {$(
+        impl std::ops::$op<u32> for &'_ u256 {
+            type Output = u256;
+
+            #[inline(always)]
+            fn $method(self, rhs: u32) -> Self::Output {
+                shift!($wrap [ self, rhs ] $msg)
             }
+        }
+
+        impl_ref_binop! {
+            $op <&u256 ; u32>::$method (rhs) {
+                <&'_ u32> for &'_ u256 => { *rhs }
+                <&'_ u32> for u256 => { *rhs }
+                <u32> for u256 => { rhs }
+            }
+        }
+
+        impl_ref_binop! {
+            $op <&u256 ; u32>::$method (rhs) { u256 } => { *rhs.low() as _ }
+        }
+
+        impl_ref_binop! {
+            $op <&u256 ; u32>::$method (rhs) {
+                i8, i16, i32, i64, i128, isize,
+                u8, u16, u64, u128, usize,
+            } => { rhs as _ }
         }
     )*};
 }
-*/
+
+macro_rules! shift {
+    ($wrap:path [ $lhs:expr, $rhs:expr ] $msg:expr) => {{
+        let mut result = u256::uninit();
+        #[cfg(not(debug_assertions))]
+        {
+            $wrap(&mut result, $lhs, $rhs & 0xff);
+        }
+        #[cfg(debug_assertions)]
+        {
+            if $rhs > 0xff {
+                panic!(concat!("attempt to ", $msg));
+            }
+            $wrap(&mut result, $lhs, $rhs);
+        }
+        result
+    }};
+}
+
+impl_shifts! {
+    Shl { shl => shl3; "shift left with overflow" }
+    Shr { shr => shr3; "shift right with overflow" }
+}
 
 /*
-overflowing_add
 overflowing_div
 overflowing_div_euclid
-overflowing_mul
 overflowing_neg
 overflowing_pow
 overflowing_rem
 overflowing_rem_euclid
-overflowing_shl
-overflowing_shr
-overflowing_sub
 
-@str.0 = internal constant [33 x i8] c"attempt to multiply with overflow"
-@str.1 = internal constant [28 x i8] c"attempt to add with overflow"
 @str.2 = internal constant [25 x i8] c"attempt to divide by zero"
 @str.3 = internal constant [31 x i8] c"attempt to negate with overflow"
 @str.4 = internal constant [57 x i8] c"attempt to calculate the remainder with a divisor of zero"
-@str.5 = internal constant [35 x i8] c"attempt to shift left with overflow"
-@str.6 = internal constant [36 x i8] c"attempt to shift right with overflow"
-@str.7 = internal constant [33 x i8] c"attempt to subtract with overflow"
 */

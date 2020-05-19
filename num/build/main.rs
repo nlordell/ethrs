@@ -1,12 +1,10 @@
 mod intrinsics;
 
-use std::error::Error;
+type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<()> {
     let intrinsics = intrinsics::source()?;
-    cc::Build::new()
-        .file(intrinsics)
-        .compile("num");
+    cc::Build::new().file(intrinsics).compile("num");
 
     Ok(())
 }

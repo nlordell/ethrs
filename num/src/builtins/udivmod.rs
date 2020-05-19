@@ -190,12 +190,12 @@ pub fn udivmodti4(res: &mut u256, a: &u256, b: &u256, rem: Option<&mut u256>) {
         //     r.all -= d.all;
         //      carry = 1;
         // }
-        let s: u256 = todo!("(d - r - 1) >> (n_utword_bits - 1)");
+        let s: u256 = (d - r - 1) >> (n_utword_bits - 1);
         carry = (*s.low() as u32) & 1;
         todo!("r -= d & s");
         sr -= 1;
     }
-    q = todo!("(q << 1) | carry");
+    q = todo!("(q << 1) | u256::from(carry)");
     if let Some(rem) = rem {
         *rem = r;
     }

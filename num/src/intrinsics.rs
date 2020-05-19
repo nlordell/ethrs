@@ -1,34 +1,28 @@
 //! This module contains intrinsics used by the `u256` implementation.
-//!
-//! Note that this source file is used for both generating a template for the
-//! LLVM IR based on code generated for `i128`, as well as import the generated
-//! assembly for `i256`s.
 
 #![allow(dead_code)]
 
-macro_rules! intrinsics {
+macro_rules! def {
     ($(
-        $name:ident = (
-            $r:ident,
-            $( $p:ident $(: $pt:ty)? ),*
-        ) $(: $ret:ty)? => $block:block
+        pub fn $name:ident($r:ident, $($p:ident $(: $t:ty)?),*) $(-> $ret:ty)?;
     )*) => {
         mod ffi {
+            #![allow(improper_ctypes)]
             extern "C" {$(
                 link! {
                     concat!("__ethrs_num_", stringify!($name));
                     pub(crate) fn $name(
                         $r: &mut $crate::u256,
-                        $( $p: ty!(param: $($pt)?), )*
-                    ) -> ty!(ret: $($ret)?);
+                        $( $p: ty!($($t)? ,|| &crate::u256), )*
+                    ) $(-> $ret)?;
                 }
             )*}
         }
         $(
             pub fn $name(
                 $r: &mut $crate::u256,
-                $( $p: ty!(param: $($pt)?), )*
-            ) -> ty!(ret: $($ret)?) {
+                $( $p: ty!($($t)? ,|| &crate::u256), )*
+            ) $(-> $ret)? {
                 unsafe {
                     self::ffi::$name($r, $($p),*)
                 }
@@ -45,21 +39,33 @@ macro_rules! link {
 }
 
 macro_rules! ty {
-    (param:) => {
-        &$crate::u256
-    };
-    (param: $t:ty) => {
+    (,|| $t:ty) => {
         $t
     };
-    (ret:) => {
-        ()
-    };
-    (ret: $t:ty) => {
+    ($t:ty ,|| $d:ty) => {
         $t
     };
 }
 
-include!("intrinsics/definitions.rs");
+def! {
+    pub fn add2(r, a);
+    pub fn add3(r, a, b);
+    pub fn addc(r, a, b) -> bool;
+
+    pub fn sub2(r, a);
+    pub fn sub3(r, a, b);
+    pub fn subc(r, a, b) -> bool;
+
+    pub fn mul2(r, a);
+    pub fn mul3(r, a, b);
+    pub fn mulc(r, a, b) -> bool;
+
+    pub fn shl2(r, a: u32);
+    pub fn shl3(r, a, b: u32);
+
+    pub fn shr2(r, a: u32);
+    pub fn shr3(r, a, b: u32);
+}
 
 #[cfg(test)]
 mod tests {
@@ -69,7 +75,7 @@ mod tests {
     #[test]
     fn unchecked_addition() {
         let mut res = u256::default();
-        add(&mut res, &u256([1, 2]), &u256([3, 0]));
+        add3(&mut res, &u256([1, 2]), &u256([3, 0]));
         assert_eq!(res, u256([4, 2]),);
     }
 }
