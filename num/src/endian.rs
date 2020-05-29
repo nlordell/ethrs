@@ -49,3 +49,10 @@ impl u256 {
         &mut self.0[HI]
     }
 }
+
+impl From<u128> for u256 {
+    #[inline(always)]
+    fn from(value: u128) -> Self {
+        u256::new(value)
+    }
+}

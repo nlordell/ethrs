@@ -1,79 +1,90 @@
-//! Module containing code for generating intrinsics.
+//! This module is used as atemplate to generate LLVM IR for `u128` intrinsics
+//! which is used as a template `u256` intrinsics.
+//!
+//! This is done instead of hand-writting LLVM IR to ensure that the attributes
+//! on functions and parameters are as accurate as possible for the resulting
+//! IR, allowing for better optimizations when using plugin LTO optimizations.
 
-#[allow(dead_code)]
-mod template;
-
-use crate::Result;
-use std::env;
-use std::fs;
-use std::path::PathBuf;
-use std::process::Command;
-
-/// Gets a path source for the integer intrinsics. This will either be a
-/// pre-generated assembly source, or, in case it does not exist, a freshly
-/// generated one.
-pub fn source() -> Result<PathBuf> {
-    let path = match find()? {
-        Some(found) => found,
-        None => generate()?,
-    };
-
-    Ok(path)
+macro_rules! def {
+    ($(
+        pub fn $name:ident($r:ident, $($p:ident $(: $t:ty)?),*) $(-> $ret:ty)? $impl:block
+    )*) => {$(
+        export! {
+            name = concat!("__ethrs_num_", stringify!($name));
+            pub extern "C" fn $name(
+                $r: &mut u128,
+                $($p: ty!($($t)? ,|| &u128),)*
+            ) $(-> $ret)? {
+                $impl
+            }
+        }
+    )*};
 }
 
-/// Looks for a pre-generated intrinsics source.
-fn find() -> Result<Option<PathBuf>> {
-    let target = env::var("TARGET")?;
-    for file in fs::read_dir("src/arch")? {
-        let file = file?;
-        if target.starts_with(&*file.file_name().to_string_lossy()) {
-            let source = file.path().join("intrinsics.s");
-            return Ok(Some(source));
-        }
+macro_rules! export {
+    (name = $sym:expr; $fn:item) => {
+        #[export_name = $sym]
+        $fn
+    };
+}
+
+macro_rules! ty {
+    (,|| $t:ty) => {
+        $t
+    };
+    ($t:ty ,|| $d:ty) => {
+        $t
+    };
+}
+
+def! {
+    pub fn add2(r, a) {
+        *r += *a;
+    }
+    pub fn add3(r, a, b) {
+        *r = *a + *b;
+    }
+    pub fn addc(r, a, b) -> bool {
+        let (sum, carry) = a.overflowing_add(*b);
+        *r = sum;
+        carry
     }
 
-    Ok(None)
-}
+    pub fn sub2(r, a) {
+        *r -= *a;
+    }
+    pub fn sub3(r, a, b) {
+        *r = *a - *b;
+    }
+    pub fn subc(r, a, b) -> bool {
+        let (sum, carry) = a.overflowing_sub(*b);
+        *r = sum;
+        carry
+    }
 
-/// Generates assembly for LLVM IR integer intrinsics. This enables the crate to
-/// use compiler generated `u256` operations (such as addition, multiplication)
-/// instead of implementing by hand.
-fn generate() -> Result<PathBuf> {
-    let out_dir = PathBuf::from(env::var("OUT_DIR")?);
+    pub fn mul2(r, a) {
+        *r *= *a;
+    }
+    pub fn mul3(r, a, b) {
+        *r = *a * *b;
+    }
+    pub fn mulc(r, a, b) -> bool {
+        let (sum, carry) = a.overflowing_mul(*b);
+        *r = sum;
+        carry
+    }
 
-    let template = {
-        let path = out_dir.join("template.ll");
-        Command::new(env::var("RUSTC")?)
-            .arg("build/intrinsics/template.rs")
-            .arg("-O")
-            .args(&["--crate-type", "lib"])
-            .args(&["--emit", "llvm-ir"])
-            .args(&["--target", &env::var("TARGET")?])
-            .arg("-o")
-            .arg(&path)
-            .status()?;
-        fs::read_to_string(path)?
-    };
+    pub fn shl2(r, a: u32) {
+        *r <<= a;
+    }
+    pub fn shl3(r, a, b: u32) {
+        *r = *a << b;
+    }
 
-    let intrinsics_ir_path = {
-        let source = template
-            .replace("i128", "i256")
-            .replace("dereferenceable(16)", "dereferenceable(32)");
-        let path = out_dir.join("intrinsics.ll");
-        fs::write(&path, source)?;
-        path
-    };
-
-    let intrinsics_path = {
-        let path = out_dir.join("intrinsics.s");
-        Command::new("llc")
-            .arg(&intrinsics_ir_path)
-            .arg(format!("-mtriple={}", env::var("TARGET")?))
-            .arg("-o")
-            .arg(&path)
-            .status()?;
-        path
-    };
-
-    Ok(intrinsics_path)
+    pub fn shr2(r, a: u32) {
+        *r >>= a;
+    }
+    pub fn shr3(r, a, b: u32) {
+        *r = *a >> b;
+    }
 }
