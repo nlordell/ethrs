@@ -44,7 +44,7 @@ pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&
         if let Some(rem) = rem {
             *rem = u256::new(*n.low());
         }
-        set!(res = u256::zero());
+        set!(res = u256::ZERO);
         return;
     }
     // n.high() != 0
@@ -93,7 +93,7 @@ pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&
             if let Some(rem) = rem {
                 *rem = *n;
             }
-            set!(res = u256::zero());
+            set!(res = u256::ZERO);
             return;
         }
         sr += 1;
@@ -170,7 +170,7 @@ pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&
                 if let Some(rem) = rem {
                     *rem = *n;
                 }
-                set!(res = u256::zero());
+                set!(res = u256::ZERO);
                 return;
             }
             sr += 1;

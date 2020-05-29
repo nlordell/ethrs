@@ -11,7 +11,7 @@ const HI: usize = 0;
 
 impl u256 {
     /// Creates a new 256-bit integer value from high and low words.
-    #[inline(always)]
+    #[inline]
     pub const fn from_words(hi: u128, lo: u128) -> Self {
         #[cfg(target_endian = "little")]
         {
@@ -24,27 +24,27 @@ impl u256 {
     }
 
     /// Get the low 128-bit word for this unsigned integer.
-    #[inline(always)]
+    #[inline]
     pub fn low(&self) -> &u128 {
         &self.0[LO]
     }
 
     /// Get the low 128-bit word for this unsigned integer as a mutable
     /// reference.
-    #[inline(always)]
+    #[inline]
     pub fn low_mut(&mut self) -> &mut u128 {
         &mut self.0[LO]
     }
 
     /// Get the high 128-bit word for this unsigned integer.
-    #[inline(always)]
+    #[inline]
     pub fn high(&self) -> &u128 {
         &self.0[HI]
     }
 
     /// Get the high 128-bit word for this unsigned integer as a mutable
     /// reference.
-    #[inline(always)]
+    #[inline]
     pub fn high_mut(&mut self) -> &mut u128 {
         &mut self.0[HI]
     }
