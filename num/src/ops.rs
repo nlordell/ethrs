@@ -201,3 +201,28 @@ impl std::ops::Not for &'_ u256 {
         u256([!a, !b])
     }
 }
+
+macro_rules! impl_bitwiseops {
+    ($(
+        $op:ident { $method:ident }
+    )*) => {$(
+        impl std::ops::$op<&'_ u256> for &'_ u256 {
+            type Output = u256;
+
+            #[inline]
+            fn $method(self, rhs: &'_ u256) -> Self::Output {
+                let u256([a, b]) = self;
+                let u256([rhs_a, rhs_b]) = rhs;
+                u256([a.$method(rhs_a), b.$method(rhs_b)])
+            }
+        }
+
+        impl_auto_binop!($op { $method });
+    )*};
+}
+
+impl_bitwiseops! {
+    BitAnd { bitand }
+    BitOr { bitor }
+    BitXor { bitxor }
+}
