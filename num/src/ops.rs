@@ -4,34 +4,6 @@ use crate::intrinsics::*;
 use crate::u256;
 use std::mem::MaybeUninit;
 
-impl std::ops::Div for u256 {
-    type Output = Self;
-
-    #[inline]
-    fn div(self, _rhs: Self) -> Self {
-        todo!()
-    }
-}
-
-impl std::ops::Rem for u256 {
-    type Output = Self;
-
-    #[inline]
-    fn rem(self, _rhs: Self) -> Self {
-        todo!()
-    }
-}
-
-impl std::ops::Not for u256 {
-    type Output = Self;
-
-    #[inline]
-    fn not(self) -> Self {
-        let u256([a, b]) = self;
-        u256([!a, !b])
-    }
-}
-
 macro_rules! impl_binops {
     ($(
         $op:ident {
@@ -124,6 +96,36 @@ impl_binops! {
     Mul { mul => mul3, mulc; "multiply with overflow" }
 }
 
+impl std::ops::Div for &'_ u256 {
+    type Output = u256;
+
+    #[inline]
+    fn div(self, rhs: Self) -> Self::Output {
+        if rhs == &u256::ZERO {
+            panic!("attempt to divide by zero");
+        }
+
+        todo!()
+    }
+}
+
+impl_auto_binop!(Div { div });
+
+impl std::ops::Rem for &'_ u256 {
+    type Output = u256;
+
+    #[inline]
+    fn rem(self, rhs: Self) -> Self::Output {
+        if rhs == &u256::ZERO {
+            panic!("attempt to calculate the remainder with a divisor of zero");
+        }
+
+        todo!()
+    }
+}
+
+impl_auto_binop!(Rem { rem });
+
 macro_rules! impl_shifts {
     ($(
         $op:ident {
@@ -180,15 +182,22 @@ impl_shifts! {
     Shr { shr => shr3; "shift right with overflow" }
 }
 
-/*
-overflowing_div
-overflowing_div_euclid
-overflowing_neg
-overflowing_pow
-overflowing_rem
-overflowing_rem_euclid
+impl std::ops::Not for u256 {
+    type Output = u256;
 
-@str.2 = internal constant [25 x i8] c"attempt to divide by zero"
-@str.3 = internal constant [31 x i8] c"attempt to negate with overflow"
-@str.4 = internal constant [57 x i8] c"attempt to calculate the remainder with a divisor of zero"
-*/
+    #[inline]
+    fn not(self) -> Self::Output {
+        let u256([a, b]) = self;
+        u256([!a, !b])
+    }
+}
+
+impl std::ops::Not for &'_ u256 {
+    type Output = u256;
+
+    #[inline]
+    fn not(self) -> Self::Output {
+        let u256([a, b]) = self;
+        u256([!a, !b])
+    }
+}

@@ -4,8 +4,6 @@ use crate::intrinsics;
 use crate::u256;
 use std::mem::MaybeUninit;
 
-const BITS: u32 = 256;
-
 impl u256 {
     /// Checked integer addition. Computes `self + rhs`, returning `None`
     /// if overflow occurred.
@@ -884,7 +882,7 @@ impl u256 {
                   without modifying the original"]
     #[inline]
     pub fn overflowing_shl(self, rhs: u32) -> (Self, bool) {
-        (self.wrapping_shl(rhs), (rhs > (BITS - 1)))
+        (self.wrapping_shl(rhs), rhs > 255)
     }
 
     /// Shifts self right by `rhs` bits.
@@ -908,7 +906,7 @@ impl u256 {
                   without modifying the original"]
     #[inline]
     pub fn overflowing_shr(self, rhs: u32) -> (Self, bool) {
-        (self.wrapping_shr(rhs), (rhs > (BITS - 1)))
+        (self.wrapping_shr(rhs), rhs > 255)
     }
 
     /// Raises self to the power of `exp`, using exponentiation by squaring.
