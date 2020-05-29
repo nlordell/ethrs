@@ -1,9 +1,6 @@
 mod arith;
-mod builtins;
 mod endian;
-mod intrinsics;
-
-use std::mem::MaybeUninit;
+pub mod intrinsics;
 
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
@@ -25,13 +22,17 @@ impl u256 {
         u256::new(0)
     }
 
-    /// Creates an uninitialized value of this integer type.
-    ///
-    /// This is always safe since for integer types.
+    /// Creates a new 256-bit integer value from a primitive `u128` integer.
     #[inline(always)]
-    #[allow(clippy::uninit_assumed_init)]
-    pub fn uninit() -> Self {
-        unsafe { MaybeUninit::uninit().assume_init() }
+    pub const fn new(value: u128) -> Self {
+        u256::from_words(0, value)
+    }
+}
+
+impl From<u128> for u256 {
+    #[inline(always)]
+    fn from(value: u128) -> Self {
+        u256::new(value)
     }
 }
 

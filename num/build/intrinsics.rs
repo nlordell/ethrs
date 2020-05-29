@@ -5,15 +5,18 @@
 //! on functions and parameters are as accurate as possible for the resulting
 //! IR, allowing for better optimizations when using plugin LTO optimizations.
 
+use std::mem::MaybeUninit;
+
 macro_rules! def {
     ($(
-        pub fn $name:ident($r:ident, $($p:ident $(: $t:ty)?),*) $(-> $ret:ty)? $impl:block
+        pub unsafe fn $name:ident(
+            $($p:ident : $t:ty),*
+        ) $(-> $ret:ty)? $impl:block
     )*) => {$(
         export! {
             name = concat!("__ethrs_num_", stringify!($name));
-            pub extern "C" fn $name(
-                $r: &mut u128,
-                $($p: ty!($($t)? ,|| &u128),)*
+            pub unsafe extern "C" fn $name(
+                $($p: $t,)*
             ) $(-> $ret)? {
                 $impl
             }
@@ -28,63 +31,59 @@ macro_rules! export {
     };
 }
 
-macro_rules! ty {
-    (,|| $t:ty) => {
-        $t
-    };
-    ($t:ty ,|| $d:ty) => {
-        $t
-    };
-}
-
 def! {
-    pub fn add2(r, a) {
+    pub unsafe fn add2(r: &mut u128, a: &u128) {
         *r += *a;
     }
-    pub fn add3(r, a, b) {
-        *r = *a + *b;
+    pub unsafe fn add3(r: &mut MaybeUninit<u128>, a: &u128, b: &u128) {
+        let res = a.wrapping_add(*b);
+        r.as_mut_ptr().write(res);
     }
-    pub fn addc(r, a, b) -> bool {
-        let (sum, carry) = a.overflowing_add(*b);
-        *r = sum;
+    pub unsafe fn addc(r: &mut MaybeUninit<u128>, a: &u128, b: &u128) -> bool {
+        let (res, carry) = a.overflowing_add(*b);
+        r.as_mut_ptr().write(res);
         carry
     }
 
-    pub fn sub2(r, a) {
+    pub unsafe fn sub2(r: &mut u128, a: &u128) {
         *r -= *a;
     }
-    pub fn sub3(r, a, b) {
-        *r = *a - *b;
+    pub unsafe fn sub3(r: &mut MaybeUninit<u128>, a: &u128, b: &u128) {
+        let res = a.wrapping_sub(*b);
+        r.as_mut_ptr().write(res);
     }
-    pub fn subc(r, a, b) -> bool {
-        let (sum, carry) = a.overflowing_sub(*b);
-        *r = sum;
+    pub unsafe fn subc(r: &mut MaybeUninit<u128>, a: &u128, b: &u128) -> bool {
+        let (res, carry) = a.overflowing_sub(*b);
+        r.as_mut_ptr().write(res);
         carry
     }
 
-    pub fn mul2(r, a) {
+    pub unsafe fn mul2(r: &mut u128, a: &u128) {
         *r *= *a;
     }
-    pub fn mul3(r, a, b) {
-        *r = *a * *b;
+    pub unsafe fn mul3(r: &mut MaybeUninit<u128>, a: &u128, b: &u128) {
+        let res = a.wrapping_mul(*b);
+        r.as_mut_ptr().write(res);
     }
-    pub fn mulc(r, a, b) -> bool {
-        let (sum, carry) = a.overflowing_mul(*b);
-        *r = sum;
+    pub unsafe fn mulc(r: &mut MaybeUninit<u128>, a: &u128, b: &u128) -> bool {
+        let (res, carry) = a.overflowing_mul(*b);
+        r.as_mut_ptr().write(res);
         carry
     }
 
-    pub fn shl2(r, a: u32) {
+    pub unsafe fn shl2(r: &mut u128, a: u32) {
         *r <<= a;
     }
-    pub fn shl3(r, a, b: u32) {
-        *r = *a << b;
+    pub unsafe fn shl3(r: &mut MaybeUninit<u128>, a: &u128, b: u32) {
+        let res = a.wrapping_shl(b);
+        r.as_mut_ptr().write(res);
     }
 
-    pub fn shr2(r, a: u32) {
+    pub unsafe fn shr2(r: &mut u128, a: u32) {
         *r >>= a;
     }
-    pub fn shr3(r, a, b: u32) {
-        *r = *a >> b;
+    pub unsafe fn shr3(r: &mut MaybeUninit<u128>, a: &u128, b: u32) {
+        let res = a.wrapping_shr(b);
+        r.as_mut_ptr().write(res);
     }
 }

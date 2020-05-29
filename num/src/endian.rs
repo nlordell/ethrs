@@ -10,16 +10,16 @@ const HI: usize = 1;
 const HI: usize = 0;
 
 impl u256 {
-    /// Creates a new 256-bit integer value from a primitive `u128` integer.
+    /// Creates a new 256-bit integer value from high and low words.
     #[inline(always)]
-    pub const fn new(value: u128) -> Self {
+    pub const fn from_words(hi: u128, lo: u128) -> Self {
         #[cfg(target_endian = "little")]
         {
-            u256([value, 0])
+            u256([lo, hi])
         }
         #[cfg(target_endian = "big")]
         {
-            u256([0, value])
+            u256([hi, lo])
         }
     }
 
@@ -47,12 +47,5 @@ impl u256 {
     #[inline(always)]
     pub fn high_mut(&mut self) -> &mut u128 {
         &mut self.0[HI]
-    }
-}
-
-impl From<u128> for u256 {
-    #[inline(always)]
-    fn from(value: u128) -> Self {
-        u256::new(value)
     }
 }

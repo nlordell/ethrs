@@ -2,6 +2,7 @@
 
 use crate::intrinsics::*;
 use crate::u256;
+use std::mem::MaybeUninit;
 
 macro_rules! impl_binops {
     ($(
@@ -26,7 +27,7 @@ macro_rules! impl_binops {
 
 macro_rules! binop {
     ($wrap:path, $overflow:path [ $lhs:expr, $rhs:expr ] $msg:expr) => {{
-        let mut result = u256::uninit();
+        let mut result = MaybeUninit::uninit();
         #[cfg(not(debug_assertions))]
         {
             $wrap(&mut result, $lhs, $rhs);
@@ -38,7 +39,7 @@ macro_rules! binop {
                 panic!(concat!("attempt to ", $msg));
             }
         }
-        result
+        unsafe { result.assume_init() }
     }};
 }
 
@@ -134,7 +135,7 @@ macro_rules! impl_shifts {
 
 macro_rules! shift {
     ($wrap:path [ $lhs:expr, $rhs:expr ] $msg:expr) => {{
-        let mut result = u256::uninit();
+        let mut result = MaybeUninit::uninit();
         #[cfg(not(debug_assertions))]
         {
             $wrap(&mut result, $lhs, $rhs & 0xff);
@@ -146,7 +147,7 @@ macro_rules! shift {
             }
             $wrap(&mut result, $lhs, $rhs);
         }
-        result
+        unsafe { result.assume_init() }
     }};
 }
 
