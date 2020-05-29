@@ -36,79 +36,66 @@ impl u256 {
 //
 // # Methods
 //
-// - checked_next_power_of_two
+// - from_str_radix
 //
-// - count_ones
-// - count_zeros
+// - count_ones (intrinsic)
+// - count_zeros (intrinsic)
+// - leading_ones (intrinsic)
+// - leading_zeros (intrinsic)
+// - trailing_ones (intrinsic)
+// - trailing_zeros (intrinsic)
+//
+// - reverse_bits (intrinsic)
+// - swap_bytes (intrinsic)
+//
+// - rotate_left (intrinsic)
+// - rotate_right (intrinsic)
 //
 // - from_be
 // - from_be_bytes
 // - from_le
 // - from_le_bytes
 // - from_ne_bytes
-//
-// - from_str_radix
-//
-// - is_power_of_two
-//
-// - leading_ones
-// - leading_zeros
-//
-// - next_power_of_two
-//
-// - reverse_bits
-//
-// - rotate_left
-// - rotate_right
-//
-// - swap_bytes
-//
 // - to_be
 // - to_be_bytes
 // - to_le
 // - to_le_bytes
 // - to_ne_bytes
 //
-// - trailing_ones
-// - trailing_zeros
-//
-// - wrapping_next_power_of_two
+// - checked_next_power_of_two
+// - is_power_of_two (intrinsic)
+// - next_power_of_two
+// - wrapping_next_power_of_two (unstable)
 //
 // # Trait Implementations
 //
-// - AddAssign<&'_ u128>
-// - AddAssign<u128>
+// - Ord
+// - PartialOrd<u128>
+//
+// - Display
+// - FromStr
 //
 // - Binary
+// - LowerExp
+// - LowerHex
+// - Octal
+// - UpperExp
+// - UpperHex
 //
+// - AddAssign<&'_ u128>
+// - AddAssign<u128>
 // - BitAndAssign<&'_ u128>
 // - BitAndAssign<u128>
 // - BitOrAssign<&'_ u128>
 // - BitOrAssign<u128>
 // - BitXorAssign<&'_ u128>
 // - BitXorAssign<u128>
-//
-// - Display
-//
 // - DivAssign<&'_ u128>
 // - DivAssign<u128>
-//
-// - FromStr
-//
-// - LowerExp
-// - LowerHex
-//
 // - MulAssign<&'_ u128>
 // - MulAssign<u128>
-//
-// - Octal
-//
-// - Ord
-// - PartialOrd<u128>
-//
 // - RemAssign<&'_ u128>
 // - RemAssign<u128>
-//
 // - ShlAssign<&'_ i128>
 // - ShlAssign<&'_ i16>
 // - ShlAssign<&'_ i32>
@@ -157,11 +144,5 @@ impl u256 {
 // - ShrAssign<u64>
 // - ShrAssign<u8>
 // - ShrAssign<usize>
-//
-// - Step
-//
 // - SubAssign<&'_ u128>
 // - SubAssign<u128>
-//
-// - UpperExp
-// - UpperHex

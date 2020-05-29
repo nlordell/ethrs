@@ -27,3 +27,5 @@ impl<'a> Product<&'a u256> for u256 {
         iter.fold(u256::ONE, Mul::mul)
     }
 }
+
+// TODO(nlordell): Implement [`std::iter::Step`] once it stabilizes.
