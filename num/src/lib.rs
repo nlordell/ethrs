@@ -45,22 +45,8 @@ impl u256 {
 // - trailing_ones (intrinsic)
 // - trailing_zeros (intrinsic)
 //
-// - reverse_bits (intrinsic)
-// - swap_bytes (intrinsic)
-//
 // - rotate_left (intrinsic)
 // - rotate_right (intrinsic)
-//
-// - from_be
-// - from_be_bytes
-// - from_le
-// - from_le_bytes
-// - from_ne_bytes
-// - to_be
-// - to_be_bytes
-// - to_le
-// - to_le_bytes
-// - to_ne_bytes
 //
 // - checked_next_power_of_two
 // - is_power_of_two (intrinsic)

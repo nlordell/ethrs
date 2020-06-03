@@ -18,6 +18,6 @@ fn arithmetic<U: Add + Mul + Sub + Copy + From<u128>>(c: &mut Criterion) {
     });
 }
 
-criterion_group!(num, arithmetic::<num::u256>);
+criterion_group!(num, arithmetic::<ethrs_num::u256>);
 criterion_group!(uint, arithmetic::<primitive_types::U256>);
 criterion_main!(num, uint);
