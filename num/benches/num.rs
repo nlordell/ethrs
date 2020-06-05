@@ -4,7 +4,7 @@ use std::ops::*;
 
 fn arithmetic<U>(c: &mut Criterion)
 where
-    U: Add + Mul + Sub + Shr + Copy + From<u128>,
+    U: Add + Mul + Sub + Shl + Shr + Copy + From<u128>,
 {
     let value = U::from(u128::MAX);
 
@@ -21,6 +21,10 @@ where
     });
 
     c.bench_function(&format!("{}::shl", any::type_name::<U>()), |b| {
+        b.iter(|| black_box(value) << black_box(U::from(21)))
+    });
+
+    c.bench_function(&format!("{}::shr", any::type_name::<U>()), |b| {
         b.iter(|| black_box(value) >> black_box(U::from(21)))
     });
 }
