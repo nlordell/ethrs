@@ -1,4 +1,5 @@
 mod arith;
+mod cmp;
 mod convert;
 mod endian;
 pub mod intrinsics;
@@ -8,7 +9,7 @@ mod ops;
 pub use self::convert::AsU256;
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq)]
 #[repr(transparent)]
 pub struct u256(pub [u128; 2]);
 
@@ -54,9 +55,6 @@ impl u256 {
 // - wrapping_next_power_of_two (unstable)
 //
 // # Trait Implementations
-//
-// - Ord
-// - PartialOrd<u128>
 //
 // - Display
 // - FromStr
