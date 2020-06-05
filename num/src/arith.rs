@@ -572,7 +572,8 @@ impl u256 {
     /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(1).wrapping_shl(7), u256::new(128));
-    /// assert_eq!(u256::new(1).wrapping_shl(128), u256::new(1));
+    /// assert_eq!(u256::new(1).wrapping_shl(128), u256::from_words(1, 0));
+    /// assert_eq!(u256::new(1).wrapping_shl(256), u256::new(1));
     /// ```
     #[must_use = "this returns the result of the operation, \
                   without modifying the original"]
@@ -601,7 +602,8 @@ impl u256 {
     /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(128).wrapping_shr(7), u256::new(1));
-    /// assert_eq!(u256::new(128).wrapping_shr(128), u256::new(128));
+    /// assert_eq!(u256::from_words(128, 0).wrapping_shr(128), u256::new(128));
+    /// assert_eq!(u256::new(128).wrapping_shr(256), u256::new(128));
     /// ```
     #[must_use = "this returns the result of the operation, \
                   without modifying the original"]

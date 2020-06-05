@@ -2,7 +2,10 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::any;
 use std::ops::*;
 
-fn arithmetic<U: Add + Mul + Sub + Copy + From<u128>>(c: &mut Criterion) {
+fn arithmetic<U>(c: &mut Criterion)
+where
+    U: Add + Mul + Sub + Shr + Copy + From<u128>,
+{
     let value = U::from(u128::MAX);
 
     c.bench_function(&format!("{}::add", any::type_name::<U>()), |b| {
@@ -15,6 +18,10 @@ fn arithmetic<U: Add + Mul + Sub + Copy + From<u128>>(c: &mut Criterion) {
 
     c.bench_function(&format!("{}::sub", any::type_name::<U>()), |b| {
         b.iter(|| black_box(value) - black_box(value))
+    });
+
+    c.bench_function(&format!("{}::shl", any::type_name::<U>()), |b| {
+        b.iter(|| black_box(value) >> black_box(U::from(21)))
     });
 }
 

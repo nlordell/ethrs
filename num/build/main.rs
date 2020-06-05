@@ -10,6 +10,11 @@ use std::process::Command;
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 fn main() -> Result<()> {
+    let lto = is_linker_plugin_lto_enabled();
+    if lto {
+        println!("cargo:rustc-cfg=linker_plugin_lto");
+    }
+
     let build = match (is_linker_plugin_lto_enabled(), pregenerated()?) {
         (false, Some(build)) => build,
         (true, _) | (_, None) => {
@@ -53,6 +58,7 @@ fn pregenerated() -> Result<Option<Build>> {
 fn generate() -> Result<Build> {
     let out_dir = PathBuf::from(env::var("OUT_DIR")?);
 
+    println!("cargo:rerun-if-changed=build/intrinsics.rs");
     let template = {
         let path = out_dir.join("template.ll");
         Command::new(env::var("RUSTC")?)
@@ -70,6 +76,7 @@ fn generate() -> Result<Build> {
     let intrinsics_ir_path = {
         let source = template
             .replace("i128", "i256")
+            .replace(" 127", " 255")
             .replace("dereferenceable(16)", "dereferenceable(32)");
         let path = out_dir.join("intrinsics.ll");
         fs::write(&path, source)?;

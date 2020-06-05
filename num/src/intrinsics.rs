@@ -1,39 +1,41 @@
 //! This module contains intrinsics used by the `u256` implementation.
 
+#[cfg(not(linker_plugin_lto))]
+mod native;
 mod udivmod;
 
+#[cfg(not(linker_plugin_lto))]
+pub use self::native::*;
 pub use self::udivmod::udivmodti4;
 use crate::u256;
 use std::mem::MaybeUninit;
 
 macro_rules! def {
     ($(
+        $(#[$a:meta])*
         pub fn $name:ident(
             $($p:ident : $t:ty),*
         ) $(-> $ret:ty)?;
-    )*) => {
-        #[allow(improper_ctypes)]
-        mod ffi {
-            use super::*;
-            extern "C" {$(
+    )*) => {$(
+        $(#[$a])*
+        pub fn $name(
+            $($p: $t,)*
+        ) $(-> $ret)? {
+            #[allow(improper_ctypes)]
+            extern "C" {
                 link! {
                     concat!("__ethrs_num_", stringify!($name));
-                    pub(crate) fn $name(
+                    fn $name(
                         $($p: $t,)*
                     ) $(-> $ret)?;
                 }
-            )*}
-        }
-        $(
-            pub fn $name(
-                $($p: $t,)*
-            ) $(-> $ret)? {
-                unsafe {
-                    ffi::$name($($p),*)
-                }
             }
-        )*
-    };
+
+            unsafe {
+                $name($($p),*)
+            }
+        }
+    )*};
 }
 
 macro_rules! link {
@@ -44,6 +46,13 @@ macro_rules! link {
 }
 
 def! {
+    pub fn mul2(r: &mut u256, a: &u256);
+    pub fn mul3(r: &mut MaybeUninit<u256>, a: &u256, b: &u256);
+    pub fn mulc(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) -> bool;
+}
+
+#[cfg(linker_plugin_lto)]
+def! {
     pub fn add2(r: &mut u256, a: &u256);
     pub fn add3(r: &mut MaybeUninit<u256>, a: &u256, b: &u256);
     pub fn addc(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) -> bool;
@@ -51,10 +60,6 @@ def! {
     pub fn sub2(r: &mut u256, a: &u256);
     pub fn sub3(r: &mut MaybeUninit<u256>, a: &u256, b: &u256);
     pub fn subc(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) -> bool;
-
-    pub fn mul2(r: &mut u256, a: &u256);
-    pub fn mul3(r: &mut MaybeUninit<u256>, a: &u256, b: &u256);
-    pub fn mulc(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) -> bool;
 
     pub fn shl2(r: &mut u256, a: u32);
     pub fn shl3(r: &mut MaybeUninit<u256>, a: &u256, b: u32);

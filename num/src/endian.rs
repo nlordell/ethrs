@@ -24,6 +24,21 @@ impl u256 {
         }
     }
 
+    /// Splits a 256-bit integer into high and low words.
+    #[inline]
+    pub const fn into_words(self) -> (u128, u128) {
+        #[cfg(target_endian = "little")]
+        {
+            let u256([lo, hi]) = self;
+            (hi, lo)
+        }
+        #[cfg(target_endian = "big")]
+        {
+            let u256([hi, lo]) = self;
+            (hi, lo)
+        }
+    }
+
     /// Get the low 128-bit word for this unsigned integer.
     #[inline]
     pub fn low(&self) -> &u128 {
