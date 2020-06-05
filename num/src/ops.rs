@@ -93,7 +93,7 @@ macro_rules! impl_ref_binop {
 impl_binops! {
     Add { add => add3, addc; "add with overflow" }
     Sub { sub => sub3, subc; "subtract with overflow" }
-    Mul { mul => mul3, mulc; "multiply with overflow" }
+    Mul { mul => multi3, multi3c; "multiply with overflow" }
 }
 
 impl std::ops::Div for &'_ u256 {

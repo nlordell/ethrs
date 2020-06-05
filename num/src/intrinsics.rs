@@ -1,9 +1,10 @@
 //! This module contains intrinsics used by the `u256` implementation.
 
-#[cfg(not(linker_plugin_lto))]
-mod native;
+mod mul;
+pub mod native;
 mod udivmod;
 
+pub use self::mul::{mulc as multi3c, multi3};
 #[cfg(not(linker_plugin_lto))]
 pub use self::native::*;
 pub use self::udivmod::udivmodti4;
