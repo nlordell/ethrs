@@ -1,7 +1,7 @@
 //! Module contains conversions for [`u256`] to and from primimitive types.
 
 use crate::u256;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::num::TryFromIntError;
 
 macro_rules! impl_from {
@@ -66,4 +66,99 @@ impl_as_u256! {
     i8, i16, i32, i64, i128,
     u8, u16, u32, u64, u128,
     isize, usize,
+}
+
+macro_rules! impl_as_u256_float {
+    ($($t:ty [$b:ty]),* $(,)?) => {$(
+        impl AsU256 for $t {
+            #[inline]
+            fn as_u256(self) -> u256 {
+                // The conversion follows roughly the same rules as converting
+                // `f64` to other primitive integer types:
+                // - `NaN` => `0`
+                // - `(-∞, 0]` => `0`
+                // - `(0, u256::MAX]` => `value as u256`
+                // - `(u256::MAX, +∞)` => `u256::MAX`
+
+                const M: u32 = <$t>::MANTISSA_DIGITS - 1;
+                const MAN_MASK: $b = !(!0 << M);
+                const MAN_ONE: $b = 1 << M;
+                const EXP_MASK: $b = !0 >> <$t>::MANTISSA_DIGITS;
+                const EXP_OFFSET: $b = EXP_MASK / 2;
+
+                if self >= 1.0 {
+                    let bits = self.to_bits();
+                    let exponent = ((bits >> M) & EXP_MASK) - EXP_OFFSET;
+                    let mantissa = (bits & MAN_MASK) | MAN_ONE;
+                    if exponent <= 52 {
+                        u256::from(mantissa >> (52 - exponent))
+                    } else if exponent >= 256 {
+                        u256::MAX
+                    } else {
+                        u256::from(mantissa) << (exponent - 52)
+                    }
+                } else {
+                    u256::ZERO
+                }
+            }
+        }
+    )*};
+}
+
+impl_as_u256_float! {
+    f32[u32], f64[u64],
+}
+
+impl TryInto<u128> for u256 {
+    type Error = TryFromIntError;
+
+    #[inline]
+    fn try_into(self) -> Result<u128, Self::Error> {
+        let (hi, lo) = self.into_words();
+        if hi != 0 {
+            // NOTE: Work around not being able to construct an error.
+            (-1isize).try_into()
+        } else {
+            Ok(lo)
+        }
+    }
+}
+
+macro_rules! impl_try_into {
+    ($($t:ty),* $(,)?) => {$(
+        impl TryInto<$t> for u256 {
+            type Error = TryFromIntError;
+
+            #[inline]
+            fn try_into(self) -> Result<$t, Self::Error> {
+                let (hi, lo) = self.into_words();
+                let x = if hi != 0 { u128::MAX } else { lo };
+                x.try_into()
+            }
+        }
+    )*};
+}
+
+impl_try_into! {
+    i8, i16, i32, i64, i128,
+    u8, u16, u32, u64,
+    isize, usize,
+}
+
+macro_rules! impl_into_float {
+    ($($t:ty),* $(,)?) => {$(
+        impl Into<$t> for u256 {
+            #[inline]
+            fn into(self) -> $t {
+                match self.into_words() {
+                    (0, lo) => lo as $t,
+                    (hi, lo) => (hi as $t) * (2. as $t).powi(128) + (lo as $t),
+                }
+            }
+        }
+    )*};
+}
+
+impl_into_float! {
+    f32, f64,
 }
