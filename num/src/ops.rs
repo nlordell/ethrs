@@ -92,8 +92,8 @@ macro_rules! impl_ref_binop {
 
 impl_binops! {
     Add { add => add3, addc; "add with overflow" }
-    Sub { sub => sub3, subc; "subtract with overflow" }
     Mul { mul => mul3, mulc; "multiply with overflow" }
+    Sub { sub => sub3, subc; "subtract with overflow" }
 }
 
 impl std::ops::Div for &'_ u256 {
@@ -106,6 +106,9 @@ impl std::ops::Div for &'_ u256 {
         }
 
         todo!()
+        // let mut result = MaybeUninit::uninit();
+        // div3(&mut result, self, rhs);
+        // unsafe { result.assume_init() }
     }
 }
 
@@ -121,6 +124,9 @@ impl std::ops::Rem for &'_ u256 {
         }
 
         todo!()
+        // let mut result = MaybeUninit::uninit();
+        // rem3(&mut result, self, rhs);
+        // unsafe { result.assume_init() }
     }
 }
 
@@ -225,4 +231,85 @@ impl_bitwiseops! {
     BitAnd { bitand }
     BitOr { bitor }
     BitXor { bitxor }
+}
+
+macro_rules! impl_binops_assign {
+    ($(
+        $op:ident {
+            $method:ident =>
+            $wrap:path,
+            $binop:tt
+        }
+    )*) => {$(
+        impl std::ops::$op<&'_ u256> for u256 {
+            #[inline]
+            fn $method(&mut self, rhs: &'_ u256) {
+                binop_assign!($wrap, $binop [ self, rhs ])
+            }
+        }
+
+        impl_auto_binop_assign!($op { $method });
+    )*};
+}
+
+macro_rules! binop_assign {
+    ($wrap:path, $binop:tt [ $lhs:expr, $rhs:expr ]) => {{
+        #[cfg(not(debug_assertions))]
+        {
+            $wrap($lhs, $rhs);
+        }
+        #[cfg(debug_assertions)]
+        {
+            *($lhs) = *($lhs) $binop *($rhs);
+        }
+    }};
+}
+
+macro_rules! impl_auto_binop_assign {
+    ($op:ident { $method:ident }) => {
+        impl_ref_binop_assign! {
+            $op <u256 ; &u256>::$method (rhs) {
+                <u256> => { &rhs }
+            }
+        }
+
+        impl_ref_binop_assign! {
+            $op <u256 ; u256>::$method (rhs) { u128 } => { u256::new(rhs) }
+        }
+    };
+}
+
+macro_rules! impl_ref_binop_assign {
+    (
+        $op:ident <$ref:ty ; $tr:ty> :: $method:ident ($x:ident) {$(
+            <$rhs:ty> => $conv:block
+        )*}
+    ) => {$(
+        impl std::ops::$op<$rhs> for u256 {
+            #[inline]
+            fn $method(&mut self, $x: $rhs) {
+                <$ref as std::ops::$op<$tr>>::$method(self, $conv)
+            }
+        }
+    )*};
+    (
+        $op:ident <$ref:ty ; $tr:ty> :: $method:ident ($x:ident) {
+            $($rhs:ty),* $(,)?
+        } => $conv:block
+    ) => {$(
+        impl_ref_binop_assign! {
+            $op <u256 ; $tr>::$method (rhs) {
+                <&'_ $rhs> => { let $x = *rhs; $conv }
+                <$rhs> => { let $x = rhs; $conv }
+            }
+        }
+    )*};
+}
+
+impl_binops_assign! {
+    AddAssign { add_assign => add2, + }
+    DivAssign { div_assign => div2, / }
+    MulAssign { mul_assign => mul2, * }
+    RemAssign { rem_assign => rem2, % }
+    SubAssign { sub_assign => sub2, - }
 }

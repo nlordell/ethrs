@@ -66,20 +66,12 @@ impl u256 {
 // - UpperExp
 // - UpperHex
 //
-// - AddAssign<&'_ u128>
-// - AddAssign<u128>
 // - BitAndAssign<&'_ u128>
 // - BitAndAssign<u128>
 // - BitOrAssign<&'_ u128>
 // - BitOrAssign<u128>
 // - BitXorAssign<&'_ u128>
 // - BitXorAssign<u128>
-// - DivAssign<&'_ u128>
-// - DivAssign<u128>
-// - MulAssign<&'_ u128>
-// - MulAssign<u128>
-// - RemAssign<&'_ u128>
-// - RemAssign<u128>
 // - ShlAssign<&'_ i128>
 // - ShlAssign<&'_ i16>
 // - ShlAssign<&'_ i32>
@@ -128,5 +120,3 @@ impl u256 {
 // - ShrAssign<u64>
 // - ShrAssign<u8>
 // - ShrAssign<usize>
-// - SubAssign<&'_ u128>
-// - SubAssign<u128>

@@ -580,7 +580,7 @@ impl u256 {
     #[inline]
     pub fn wrapping_shl(self, rhs: u32) -> Self {
         let mut result = MaybeUninit::uninit();
-        intrinsics::shl3(&mut result, &self, rhs);
+        intrinsics::shl3(&mut result, &self, rhs & 0xff);
         unsafe { result.assume_init() }
     }
 
@@ -610,7 +610,7 @@ impl u256 {
     #[inline]
     pub fn wrapping_shr(self, rhs: u32) -> Self {
         let mut result = MaybeUninit::uninit();
-        intrinsics::shr3(&mut result, &self, rhs);
+        intrinsics::shr3(&mut result, &self, rhs & 0xff);
         unsafe { result.assume_init() }
     }
 
