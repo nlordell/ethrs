@@ -68,6 +68,17 @@ impl_as_u256! {
     isize, usize,
 }
 
+impl AsU256 for bool {
+    #[inline]
+    fn as_u256(self) -> u256 {
+        if self {
+            u256::ONE
+        } else {
+            u256::ZERO
+        }
+    }
+}
+
 macro_rules! impl_as_u256_float {
     ($($t:ty [$b:ty]),* $(,)?) => {$(
         impl AsU256 for $t {

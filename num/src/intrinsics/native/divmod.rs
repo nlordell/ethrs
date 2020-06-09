@@ -12,7 +12,12 @@ use crate::u256;
 use std::mem::MaybeUninit;
 
 #[allow(warnings)]
-pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&mut u256>) {
+pub fn udivmodti4(
+    res: &mut MaybeUninit<u256>,
+    a: &u256,
+    b: &u256,
+    rem: Option<&mut MaybeUninit<u256>>,
+) {
     macro_rules! set {
         ($x:ident = $value:expr) => {
             unsafe { $x.as_mut_ptr().write($value) }
@@ -33,7 +38,7 @@ pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&
             // ---
             // 0 X
             if let Some(rem) = rem {
-                *rem = u256::new(n.low() % d.low());
+                unsafe { rem.as_mut_ptr().write(u256::new(n.low() % d.low())) };
             }
             set!(res = u256::new(n.low() / d.low()));
             return;
@@ -42,7 +47,7 @@ pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&
         // ---
         // K X
         if let Some(rem) = rem {
-            *rem = u256::new(*n.low());
+            unsafe { rem.as_mut_ptr().write(u256::new(*n.low())) };
         }
         set!(res = u256::ZERO);
         return;
@@ -54,7 +59,7 @@ pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&
             // ---
             // 0 0
             if let Some(rem) = rem {
-                *rem = u256::new(n.high() % d.low());
+                unsafe { rem.as_mut_ptr().write(u256::new(n.high() % d.low())) };
             }
             set!(res = u256::new(n.high() / d.low()));
             return;
@@ -65,8 +70,10 @@ pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&
             // ---
             // K 0
             if let Some(rem) = rem {
-                *rem.high_mut() = n.high() % d.high();
-                *rem.low_mut() = 0;
+                unsafe {
+                    rem.as_mut_ptr()
+                        .write(u256::from_words(n.high() % d.high(), 0))
+                };
             }
             set!(res = u256::new(n.high() / d.high()));
             return;
@@ -78,8 +85,10 @@ pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&
         /* if d is a power of 2 */
         {
             if let Some(rem) = rem {
-                *rem.low_mut() = *n.low();
-                *rem.high_mut() = n.high() & (d.high() - 1);
+                unsafe {
+                    rem.as_mut_ptr()
+                        .write(u256::from_words(*n.low(), n.high() & (d.high() - 1)))
+                };
             }
             set!(res = u256::new(n.high() >> d.high().trailing_zeros()));
             return;
@@ -91,7 +100,7 @@ pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&
         // 0 <= sr <= n_udword_bits - 2 or sr large
         if sr > n_udword_bits - 2 {
             if let Some(rem) = rem {
-                *rem = *n;
+                unsafe { rem.as_mut_ptr().write(*n) };
             }
             set!(res = u256::ZERO);
             return;
@@ -116,7 +125,7 @@ pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&
             if (d.low() & (d.low() - 1)) == 0 {
                 /* if d is a power of 2 */
                 if let Some(rem) = rem {
-                    *rem = u256::new(n.low() & (d.low() - 1));
+                    unsafe { rem.as_mut_ptr().write(u256::new(n.low() & (d.low() - 1))) };
                 }
                 if *d.low() == 1 {
                     set!(res = *n);
@@ -168,7 +177,7 @@ pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&
             // 0 <= sr <= n_udword_bits - 1 or sr large
             if sr > n_udword_bits - 1 {
                 if let Some(rem) = rem {
-                    *rem = *n;
+                    unsafe { rem.as_mut_ptr().write(*n) };
                 }
                 set!(res = u256::ZERO);
                 return;
@@ -216,10 +225,36 @@ pub fn udivmodti4(res: &mut MaybeUninit<u256>, a: &u256, b: &u256, rem: Option<&
         todo!("r -= d & s");
         sr -= 1;
     }
-    q = todo!("(q << 1) | u256::from(carry)");
+    q = (q << 1) | u256::from(carry);
     if let Some(rem) = rem {
-        *rem = r;
+        unsafe { rem.as_mut_ptr().write(r) };
     }
     set!(res = q);
     return;
+}
+
+pub fn div2(r: &mut u256, a: &u256) {
+    let (a, b) = (*r, a);
+    // SAFETY: `udivmodti4` does not write `MaybeUninit::uninit()` to `res` and
+    // `u256` does not implement `Drop`.
+    let res = unsafe { &mut *(r as *mut u256).cast() };
+    udivmodti4(res, &a, b, None);
+}
+
+pub fn div3(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) {
+    udivmodti4(r, a, b, None);
+}
+
+pub fn rem2(r: &mut u256, a: &u256) {
+    let mut res = MaybeUninit::uninit();
+    let (a, b) = (*r, a);
+    // SAFETY: `udivmodti4` does not write `MaybeUninit::uninit()` to `rem` and
+    // `u256` does not implement `Drop`.
+    let r = unsafe { &mut *(r as *mut u256).cast() };
+    udivmodti4(&mut res, &a, b, Some(r));
+}
+
+pub fn rem3(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) {
+    let mut res = MaybeUninit::uninit();
+    udivmodti4(&mut res, &a, b, Some(r));
 }

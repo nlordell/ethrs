@@ -1,9 +1,11 @@
-//! This module contains native implementations for simple intrinsics. These are
-//! used when linker-plugin based LTO is disabled. This is done because, even if
-//! they are not as optimized as LLVM generated intrinsics, they perform better
-//! because of compiler optimizations (for example inlining) that are not
-//! available to externally linked code when linker-plugin LTO is disabled.
+//! This module contains native implementations for intrinsics. These are used
+//! when generated IR intrinsics are disabled.
 
+mod divmod;
+mod mul;
+
+pub use self::divmod::*;
+pub use self::mul::{mulc, multi3 as mul3};
 use crate::u256;
 use std::mem::MaybeUninit;
 

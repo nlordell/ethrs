@@ -10,55 +10,35 @@ use std::process::Command;
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 fn main() -> Result<()> {
-    let lto = is_linker_plugin_lto_enabled();
-    if lto {
-        println!("cargo:rustc-cfg=linker_plugin_lto");
-    }
-
-    let build = match (is_linker_plugin_lto_enabled(), pregenerated()?) {
-        (false, Some(build)) => build,
-        (true, _) | (_, None) => {
-            // NOTE: if linker plugin LTO is enabled, always generate and
-            // compile the LLVM IR so that we can enable ThinLTO with Clang.
-            generate()?
-        }
-    };
-
-    build.try_compile("num")?;
+    generate()?;
 
     Ok(())
 }
 
-/// Looks for a pre-generated intrinsics source.
-fn pregenerated() -> Result<Option<Build>> {
-    let target = env::var("TARGET")?;
-    for file in fs::read_dir("src/arch")? {
-        let file = file?;
-        if target.starts_with(&*file.file_name().to_string_lossy()) {
-            let source = file.path().join("intrinsics.s");
-            let mut build = Build::new();
-            build.file(source);
-
-            return Ok(Some(build));
-        }
-    }
-
-    Ok(None)
-}
-
 /// Generates object for LLVM IR integer intrinsics. This enables the crate to
 /// use compiler generated `u256` operations (such as addition, multiplication)
-/// instead of implementing by hand.
+/// instead of native Rust implementation.
+///
+/// Defining the `ETHRS_NUM_GENERATE_INTRINSICS` environment variable controls
+/// enables generated intrinsics.
 ///
 /// Note that generating intrinsics requires a Clang toolchain to compile LLVM
 /// IR, but has some advantages. Specifically, it detects and enables ThinLTO
 /// for the compiled LLVM IR, which allows the linker to perform link-time
 /// optimizations such as inlining some of the intrinsics (such as `add*`) which
 /// has some REAL performance benefits.
-fn generate() -> Result<Build> {
+///
+/// Returns `true` if intrinsics were generated, `false` otherwise.
+fn generate() -> Result<bool> {
+    const VAR: &str = "ETHRS_NUM_GENERATE_INTRINSICS";
+
+    println!("cargo:rerun-if-env-changed={}", VAR);
+    if env::var(VAR).is_err() {
+        return Ok(false);
+    }
+
     let out_dir = PathBuf::from(env::var("OUT_DIR")?);
 
-    println!("cargo:rerun-if-changed=build/intrinsics.rs");
     let template = {
         let path = out_dir.join("template.ll");
         Command::new(env::var("RUSTC")?)
@@ -89,14 +69,14 @@ fn generate() -> Result<Build> {
         .file(intrinsics_ir_path)
         .opt_level(3);
 
-    if is_linker_plugin_lto_enabled() {
+    let linker_plugin_lto =
+        matches!(env::var("RUSTFLAGS"), Ok(flags) if flags.contains("-Clinker-plugin-lto"));
+    if linker_plugin_lto {
         build.flag("-flto=thin");
     }
 
-    Ok(build)
-}
+    build.try_compile("num")?;
 
-/// Returns true if Rust is configured for linker plugin LTO.
-fn is_linker_plugin_lto_enabled() -> bool {
-    matches!(env::var("RUSTFLAGS"), Ok(flags) if flags.contains("-Clinker-plugin-lto"))
+    println!("cargo:rustc-cfg=generate_intrinsics");
+    Ok(true)
 }
