@@ -16,7 +16,7 @@ macro_rules! impl_from {
 }
 
 impl_from! {
-    u8, u16, u32, u64, u128,
+    bool, u8, u16, u32, u64, u128,
 }
 
 macro_rules! impl_try_from {

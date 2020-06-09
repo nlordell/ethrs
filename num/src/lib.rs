@@ -9,7 +9,7 @@ mod ops;
 pub use self::convert::AsU256;
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq)]
 #[repr(transparent)]
 pub struct u256(pub [u128; 2]);
 
@@ -56,6 +56,7 @@ impl u256 {
 //
 // # Trait Implementations
 //
+// - Debug
 // - Display
 // - FromStr
 //
@@ -65,58 +66,3 @@ impl u256 {
 // - Octal
 // - UpperExp
 // - UpperHex
-//
-// - BitAndAssign<&'_ u128>
-// - BitAndAssign<u128>
-// - BitOrAssign<&'_ u128>
-// - BitOrAssign<u128>
-// - BitXorAssign<&'_ u128>
-// - BitXorAssign<u128>
-// - ShlAssign<&'_ i128>
-// - ShlAssign<&'_ i16>
-// - ShlAssign<&'_ i32>
-// - ShlAssign<&'_ i64>
-// - ShlAssign<&'_ i8>
-// - ShlAssign<&'_ isize>
-// - ShlAssign<&'_ u128>
-// - ShlAssign<&'_ u16>
-// - ShlAssign<&'_ u32>
-// - ShlAssign<&'_ u64>
-// - ShlAssign<&'_ u8>
-// - ShlAssign<&'_ usize>
-// - ShlAssign<i128>
-// - ShlAssign<i16>
-// - ShlAssign<i32>
-// - ShlAssign<i64>
-// - ShlAssign<i8>
-// - ShlAssign<isize>
-// - ShlAssign<u128>
-// - ShlAssign<u16>
-// - ShlAssign<u32>
-// - ShlAssign<u64>
-// - ShlAssign<u8>
-// - ShlAssign<usize>
-// - ShrAssign<&'_ i128>
-// - ShrAssign<&'_ i16>
-// - ShrAssign<&'_ i32>
-// - ShrAssign<&'_ i64>
-// - ShrAssign<&'_ i8>
-// - ShrAssign<&'_ isize>
-// - ShrAssign<&'_ u128>
-// - ShrAssign<&'_ u16>
-// - ShrAssign<&'_ u32>
-// - ShrAssign<&'_ u64>
-// - ShrAssign<&'_ u8>
-// - ShrAssign<&'_ usize>
-// - ShrAssign<i128>
-// - ShrAssign<i16>
-// - ShrAssign<i32>
-// - ShrAssign<i64>
-// - ShrAssign<i8>
-// - ShrAssign<isize>
-// - ShrAssign<u128>
-// - ShrAssign<u16>
-// - ShrAssign<u32>
-// - ShrAssign<u64>
-// - ShrAssign<u8>
-// - ShrAssign<usize>

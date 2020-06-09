@@ -38,7 +38,7 @@ pub fn udivmodti4(
             // ---
             // 0 X
             if let Some(rem) = rem {
-                unsafe { rem.as_mut_ptr().write(u256::new(n.low() % d.low())) };
+                set!(rem = u256::new(n.low() % d.low()));
             }
             set!(res = u256::new(n.low() / d.low()));
             return;
@@ -47,7 +47,7 @@ pub fn udivmodti4(
         // ---
         // K X
         if let Some(rem) = rem {
-            unsafe { rem.as_mut_ptr().write(u256::new(*n.low())) };
+            set!(rem = u256::new(*n.low()));
         }
         set!(res = u256::ZERO);
         return;
@@ -59,7 +59,7 @@ pub fn udivmodti4(
             // ---
             // 0 0
             if let Some(rem) = rem {
-                unsafe { rem.as_mut_ptr().write(u256::new(n.high() % d.low())) };
+                set!(rem = u256::new(n.high() % d.low()));
             }
             set!(res = u256::new(n.high() / d.low()));
             return;
@@ -70,10 +70,7 @@ pub fn udivmodti4(
             // ---
             // K 0
             if let Some(rem) = rem {
-                unsafe {
-                    rem.as_mut_ptr()
-                        .write(u256::from_words(n.high() % d.high(), 0))
-                };
+                set!(rem = u256::from_words(n.high() % d.high(), 0));
             }
             set!(res = u256::new(n.high() / d.high()));
             return;
@@ -85,10 +82,7 @@ pub fn udivmodti4(
         /* if d is a power of 2 */
         {
             if let Some(rem) = rem {
-                unsafe {
-                    rem.as_mut_ptr()
-                        .write(u256::from_words(*n.low(), n.high() & (d.high() - 1)))
-                };
+                set!(rem = u256::from_words(*n.low(), n.high() & (d.high() - 1)));
             }
             set!(res = u256::new(n.high() >> d.high().trailing_zeros()));
             return;
@@ -100,7 +94,7 @@ pub fn udivmodti4(
         // 0 <= sr <= n_udword_bits - 2 or sr large
         if sr > n_udword_bits - 2 {
             if let Some(rem) = rem {
-                unsafe { rem.as_mut_ptr().write(*n) };
+                set!(rem = *n);
             }
             set!(res = u256::ZERO);
             return;
@@ -125,7 +119,7 @@ pub fn udivmodti4(
             if (d.low() & (d.low() - 1)) == 0 {
                 /* if d is a power of 2 */
                 if let Some(rem) = rem {
-                    unsafe { rem.as_mut_ptr().write(u256::new(n.low() & (d.low() - 1))) };
+                    set!(rem = u256::new(n.low() & (d.low() - 1)));
                 }
                 if *d.low() == 1 {
                     set!(res = *n);
@@ -177,7 +171,7 @@ pub fn udivmodti4(
             // 0 <= sr <= n_udword_bits - 1 or sr large
             if sr > n_udword_bits - 1 {
                 if let Some(rem) = rem {
-                    unsafe { rem.as_mut_ptr().write(*n) };
+                    set!(rem = *n);
                 }
                 set!(res = u256::ZERO);
                 return;
@@ -222,12 +216,12 @@ pub fn udivmodti4(
         // }
         let s: u256 = (d - r - 1) >> (n_utword_bits - 1);
         carry = (*s.low() as u32) & 1;
-        todo!("r -= d & s");
+        r -= d & s;
         sr -= 1;
     }
     q = (q << 1) | u256::from(carry);
     if let Some(rem) = rem {
-        unsafe { rem.as_mut_ptr().write(r) };
+        set!(rem = r);
     }
     set!(res = q);
     return;
