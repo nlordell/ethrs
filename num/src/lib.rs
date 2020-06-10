@@ -1,10 +1,10 @@
-mod arith;
 mod cmp;
 mod convert;
 mod endian;
 pub mod intrinsics;
 mod iter;
 mod ops;
+mod uint;
 
 pub use self::convert::AsU256;
 
@@ -14,12 +14,6 @@ pub use self::convert::AsU256;
 pub struct u256(pub [u128; 2]);
 
 impl u256 {
-    /// The smallest value that can be represented by this integer type.
-    pub const MIN: Self = u256([0; 2]);
-
-    /// The largest value that can be represented by this integer type.
-    pub const MAX: Self = u256([!0; 2]);
-
     /// The additive identity for this integer type, i.e. `0`.
     pub const ZERO: Self = u256([0; 2]);
 

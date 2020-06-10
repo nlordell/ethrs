@@ -2,9 +2,374 @@
 
 use crate::intrinsics;
 use crate::u256;
-use std::mem::MaybeUninit;
+use std::mem::{self, MaybeUninit};
+use std::num::ParseIntError;
 
 impl u256 {
+    /// The smallest value that can be represented by this integer type.
+    pub const MIN: Self = u256([0; 2]);
+
+    /// The largest value that can be represented by this integer type.
+    pub const MAX: Self = u256([!0; 2]);
+
+    /// Converts a string slice in a given base to an integer.
+    ///
+    /// The string is expected to be an optional `+` sign followed by digits.
+    /// Leading and trailing whitespace represent an error. Digits are a subset
+    /// of these characters, depending on `radix`:
+    ///
+    /// * `0-9`
+    /// * `a-z`
+    /// * `A-Z`
+    ///
+    /// # Panics
+    ///
+    /// This function panics if `radix` is not in the range from 2 to 36.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```should_panic
+    /// # use ethrs_num::u256;
+    /// assert_eq!(u256::from_str_radix("A", 16), Ok(u256::new(10)));
+    /// ```
+    #[inline]
+    pub fn from_str_radix(src: &str, radix: u32) -> Result<Self, ParseIntError> {
+        let _ = (src, radix);
+        // from_str_radix(src, radix)
+        todo!()
+    }
+
+    /// Returns the number of ones in the binary representation of `self`.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let n = u256::new(0b01001100);
+    /// assert_eq!(n.count_ones(), 3);
+    /// ```
+    #[inline]
+    pub fn count_ones(self) -> u32 {
+        let u256([a, b]) = self;
+        a.count_ones() + b.count_ones()
+    }
+
+    /// Returns the number of zeros in the binary representation of `self`.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// assert_eq!(u256::MIN.count_zeros(), 256);
+    /// assert_eq!(u256::MAX.count_zeros(), 0);
+    /// ```
+    #[inline]
+    pub fn count_zeros(self) -> u32 {
+        let u256([a, b]) = self;
+        a.count_zeros() + b.count_zeros()
+    }
+
+    /// Returns the number of leading zeros in the binary representation of `self`.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```should_panic
+    /// # use ethrs_num::u256;
+    /// let n = u256::MAX >> 2u32;
+    /// assert_eq!(n.leading_zeros(), 2);
+    /// ```
+    #[inline]
+    pub fn leading_zeros(self) -> u32 {
+        // intrinsics::ctlz(self) as u32
+        todo!()
+    }
+
+    /// Returns the number of trailing zeros in the binary representation
+    /// of `self`.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```should_panic
+    /// # use ethrs_num::u256;
+    /// let n = u256::new(0b0101000);
+    /// assert_eq!(n.trailing_zeros(), 3);
+    /// ```
+    #[inline]
+    pub fn trailing_zeros(self) -> u32 {
+        // intrinsics::cttz(self) as u32
+        todo!()
+    }
+
+    /// Returns the number of leading ones in the binary representation of
+    /// `self`.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```should_panic
+    /// # use ethrs_num::u256;
+    /// let n = !(u256::MAX >> 2u32);
+    /// assert_eq!(n.leading_ones(), 2);
+    /// ```
+    #[inline]
+    pub fn leading_ones(self) -> u32 {
+        (!self).leading_zeros()
+    }
+
+    /// Returns the number of trailing ones in the binary representation of
+    /// `self`.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```should_panic
+    /// # use ethrs_num::u256;
+    /// let n = u256::new(0b1010111);
+    /// assert_eq!(n.trailing_ones(), 3);
+    /// ```
+    #[inline]
+    pub fn trailing_ones(self) -> u32 {
+        (!self).trailing_zeros()
+    }
+
+    /// Shifts the bits to the left by a specified amount, `n`, wrapping the
+    /// truncated bits to the end of the resulting integer.
+    ///
+    /// Please note this isn't the same operation as the `<<` shifting
+    /// operator!
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```should_panic
+    /// # use ethrs_num::u256;
+    /// let n = u256::from_words(
+    ///     0x13f40000000000000000000000000000,
+    ///     0x00000000000000000000000000004f76,
+    /// );
+    /// let m = u256::new(0x4f7613f4);
+    /// assert_eq!(n.rotate_left(16), m);
+    /// ```
+    #[must_use = "this returns the result of the operation, \
+                          without modifying the original"]
+    #[inline]
+    pub fn rotate_left(self, n: u32) -> Self {
+        let _ = n;
+        // intrinsics::rotate_left(self, n)
+        todo!()
+    }
+
+    /// Shifts the bits to the right by a specified amount, `n`, wrapping
+    /// the truncated bits to the beginning of the resulting integer.
+    ///
+    /// Please note this isn't the same operation as the `>>` shifting operator!
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```should_panic
+    /// # use ethrs_num::u256;
+    /// let n = u256::new(0x4f7613f4);
+    /// let m = u256::from_words(
+    ///     0x13f40000000000000000000000000000,
+    ///     0x00000000000000000000000000004f76,
+    /// );
+    ///
+    /// assert_eq!(n.rotate_right(16), m);
+    /// ```
+    #[must_use = "this returns the result of the operation, \
+                          without modifying the original"]
+    #[inline]
+    pub fn rotate_right(self, n: u32) -> Self {
+        let _ = n;
+        // intrinsics::rotate_right(self, n)
+        todo!()
+    }
+
+    /// Reverses the byte order of the integer.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let n = u256::from_words(
+    ///     0x00010203_04050607_08090a0b_0c0d0e0f,
+    ///     0x10111213_14151617_18191a1b_1c1d1e1f,
+    /// );
+    /// assert_eq!(
+    ///     n.swap_bytes(),
+    ///     u256::from_words(
+    ///         0x1f1e1d1c_1b1a1918_17161514_13121110,
+    ///         0x0f0e0d0c_0b0a0908_07060504_03020100,
+    ///     ),
+    /// );
+    /// ```
+    #[inline]
+    pub const fn swap_bytes(self) -> Self {
+        let u256([a, b]) = self;
+        u256([b.swap_bytes(), a.swap_bytes()])
+    }
+
+    /// Reverses the bit pattern of the integer.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let n = u256::from_words(
+    ///     0x00010203_04050607_08090a0b_0c0d0e0f,
+    ///     0x10111213_14151617_18191a1b_1c1d1e1f,
+    /// );
+    /// assert_eq!(
+    ///     n.reverse_bits(),
+    ///     u256::from_words(
+    ///         0xf878b838_d8589818_e868a828_c8488808,
+    ///         0xf070b030_d0509010_e060a020_c0408000,
+    ///     ),
+    /// );
+    /// ```
+    #[inline]
+    pub const fn reverse_bits(self) -> Self {
+        let u256([a, b]) = self;
+        u256([b.reverse_bits(), a.reverse_bits()])
+    }
+
+    /// Converts an integer from big endian to the target's endianness.
+    ///
+    /// On big endian this is a no-op. On little endian the bytes are swapped.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let n = u256::new(0x1A);
+    /// if cfg!(target_endian = "big") {
+    ///     assert_eq!(u256::from_be(n), n);
+    /// } else {
+    ///     assert_eq!(u256::from_be(n), n.swap_bytes());
+    /// }
+    /// ```
+    #[inline]
+    #[allow(clippy::wrong_self_convention)]
+    pub const fn from_be(x: Self) -> Self {
+        #[cfg(target_endian = "big")]
+        {
+            x
+        }
+        #[cfg(not(target_endian = "big"))]
+        {
+            x.swap_bytes()
+        }
+    }
+
+    /// Converts an integer from little endian to the target's endianness.
+    ///
+    /// On little endian this is a no-op. On big endian the bytes are swapped.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let n = u256::new(0x1A);
+    /// if cfg!(target_endian = "little") {
+    ///     assert_eq!(u256::from_le(n), n)
+    /// } else {
+    ///     assert_eq!(u256::from_le(n), n.swap_bytes())
+    /// }
+    /// ```
+    #[inline]
+    #[allow(clippy::wrong_self_convention)]
+    pub const fn from_le(x: Self) -> Self {
+        #[cfg(target_endian = "little")]
+        {
+            x
+        }
+        #[cfg(not(target_endian = "little"))]
+        {
+            x.swap_bytes()
+        }
+    }
+
+    /// Converts `self` to big endian from the target's endianness.
+    ///
+    /// On big endian this is a no-op. On little endian the bytes are swapped.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let n = u256::new(0x1A);
+    /// if cfg!(target_endian = "big") {
+    ///     assert_eq!(n.to_be(), n)
+    /// } else {
+    ///     assert_eq!(n.to_be(), n.swap_bytes())
+    /// }
+    /// ```
+    #[inline]
+    pub const fn to_be(self) -> Self {
+        #[cfg(target_endian = "big")]
+        {
+            self
+        }
+        #[cfg(not(target_endian = "big"))]
+        {
+            self.swap_bytes()
+        }
+    }
+
+    /// Converts `self` to little endian from the target's endianness.
+    ///
+    /// On little endian this is a no-op. On big endian the bytes are swapped.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let n = u256::new(0x1A);
+    /// if cfg!(target_endian = "little") {
+    ///     assert_eq!(n.to_le(), n)
+    /// } else {
+    ///     assert_eq!(n.to_le(), n.swap_bytes())
+    /// }
+    /// ```
+    #[inline]
+    pub const fn to_le(self) -> Self {
+        #[cfg(target_endian = "little")]
+        {
+            self
+        }
+        #[cfg(not(target_endian = "little"))]
+        {
+            self.swap_bytes()
+        }
+    }
+
     /// Checked integer addition. Computes `self + rhs`, returning `None`
     /// if overflow occurred.
     ///
@@ -1048,5 +1413,317 @@ impl u256 {
     #[inline]
     pub fn rem_euclid(self, rhs: Self) -> Self {
         self % rhs
+    }
+
+    /// Returns `true` if and only if `self == 2^k` for some `k`.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// assert!(u256::new(16).is_power_of_two());
+    /// assert!(!u256::new(10).is_power_of_two());
+    /// ```
+    #[inline]
+    pub fn is_power_of_two(self) -> bool {
+        self.count_ones() == 1
+    }
+
+    /// Returns one less than next power of two. (For 8u8 next power of two
+    /// is 8u8 and for 6u8 it is 8u8).
+    ///
+    /// 8u8.one_less_than_next_power_of_two() == 7
+    /// 6u8.one_less_than_next_power_of_two() == 7
+    ///
+    /// This method cannot overflow, as in the `next_power_of_two` overflow
+    /// cases it instead ends up returning the maximum value of the type,
+    /// and can return 0 for 0.
+    #[inline]
+    fn one_less_than_next_power_of_two(self) -> Self {
+        // if self <= 1 { return 0; }
+        //
+        // let p = self - 1;
+        // // SAFETY: Because `p > 0`, it cannot consist entirely of leading zeros.
+        // // That means the shift is always in-bounds, and some processors
+        // // (such as intel pre-haswell) have more efficient ctlz
+        // // intrinsics when the argument is non-zero.
+        // let z = unsafe { intrinsics::ctlz_nonzero(p) };
+        // u256::max_value() >> z
+        todo!()
+    }
+
+    /// Returns the smallest power of two greater than or equal to `self`.
+    ///
+    /// When return value overflows (i.e., `self > (1 << (N-1))` for type
+    /// `uN`), it panics in debug mode and return value is wrapped to 0 in
+    /// release mode (the only situation in which method can return 0).
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```should_panic
+    /// # use ethrs_num::u256;
+    /// assert_eq!(u256::new(2).next_power_of_two(), u256::new(2));
+    /// assert_eq!(u256::new(3).next_power_of_two(), u256::new(4));
+    /// ```
+    #[inline]
+    pub fn next_power_of_two(self) -> Self {
+        self.one_less_than_next_power_of_two() + 1
+    }
+
+    /// Returns the smallest power of two greater than or equal to `n`. If
+    /// the next power of two is greater than the type's maximum value,
+    /// `None` is returned, otherwise the power of two is wrapped in `Some`.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```should_panic
+    /// # use ethrs_num::u256;
+    /// assert_eq!(u256::new(2).checked_next_power_of_two(), Some(u256::new(2)));
+    /// assert_eq!(u256::new(3).checked_next_power_of_two(), Some(u256::new(4)));
+    /// assert_eq!(u256::MAX.checked_next_power_of_two(), None);
+    /// ```
+    #[inline]
+    pub fn checked_next_power_of_two(self) -> Option<Self> {
+        self.one_less_than_next_power_of_two()
+            .checked_add(u256::ONE)
+    }
+
+    /// Returns the smallest power of two greater than or equal to `n`. If
+    /// the next power of two is greater than the type's maximum value, the
+    /// return value is wrapped to `0`.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```should_panic
+    /// # use ethrs_num::u256;
+    /// assert_eq!(u256::new(2).wrapping_next_power_of_two(), u256::new(2));
+    /// assert_eq!(u256::new(3).wrapping_next_power_of_two(), u256::new(4));
+    /// assert_eq!(u256::MAX.wrapping_next_power_of_two(), u256::ZERO);
+    /// ```
+    #[inline]
+    pub fn wrapping_next_power_of_two(self) -> Self {
+        self.one_less_than_next_power_of_two()
+            .wrapping_add(u256::ONE)
+    }
+
+    /// Return the memory representation of this integer as a byte array in
+    /// big endian (network) byte order.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let bytes = u256::from_words(
+    ///     0x00010203_04050607_08090a0b_0c0d0e0f,
+    ///     0x10111213_14151617_18191a1b_1c1d1e1f,
+    /// );
+    /// assert_eq!(
+    ///     bytes.to_be_bytes(),
+    ///     [
+    ///         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    ///         0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+    ///     ],
+    /// );
+    /// ```
+    #[inline]
+    pub fn to_be_bytes(self) -> [u8; mem::size_of::<Self>()] {
+        self.to_be().to_ne_bytes()
+    }
+
+    /// Return the memory representation of this integer as a byte array in
+    /// little-endian byte order.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let bytes = u256::from_words(
+    ///     0x00010203_04050607_08090a0b_0c0d0e0f,
+    ///     0x10111213_14151617_18191a1b_1c1d1e1f,
+    /// );
+    /// assert_eq!(
+    ///     bytes.to_le_bytes(),
+    ///     [
+    ///         0x1f, 0x1e, 0x1d, 0x1c, 0x1b, 0x1a, 0x19, 0x18, 0x17, 0x16, 0x15, 0x14, 0x13, 0x12, 0x11, 0x10,
+    ///         0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00,
+    ///     ],
+    /// );
+    /// ```
+    #[inline]
+    pub fn to_le_bytes(self) -> [u8; mem::size_of::<Self>()] {
+        self.to_le().to_ne_bytes()
+    }
+
+    /// Return the memory representation of this integer as a byte array in
+    /// native byte order.
+    ///
+    /// As the target platform's native endianness is used, portable code should
+    /// use [`to_be_bytes`] or [`to_le_bytes`], as appropriate, instead.
+    ///
+    /// [`to_be_bytes`]: #method.to_be_bytes
+    /// [`to_le_bytes`]: #method.to_le_bytes
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let bytes = u256::from_words(
+    ///     0x00010203_04050607_08090a0b_0c0d0e0f,
+    ///     0x10111213_14151617_18191a1b_1c1d1e1f,
+    /// );
+    /// assert_eq!(
+    ///     bytes.to_ne_bytes(),
+    ///     if cfg!(target_endian = "big") {
+    ///         [
+    ///             0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    ///             0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+    ///         ]
+    ///     } else {
+    ///         [
+    ///             0x1f, 0x1e, 0x1d, 0x1c, 0x1b, 0x1a, 0x19, 0x18, 0x17, 0x16, 0x15, 0x14, 0x13, 0x12, 0x11, 0x10,
+    ///             0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00,
+    ///         ]
+    ///     }
+    /// );
+    /// ```
+    #[inline]
+    pub fn to_ne_bytes(self) -> [u8; mem::size_of::<Self>()] {
+        unsafe { mem::transmute(self) }
+    }
+
+    /// Create an integer value from its representation as a byte array in big
+    /// endian.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let value = u256::from_be_bytes([
+    ///     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    ///     0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+    /// ]);
+    /// assert_eq!(
+    ///     value,
+    ///     u256::from_words(
+    ///         0x00010203_04050607_08090a0b_0c0d0e0f,
+    ///         0x10111213_14151617_18191a1b_1c1d1e1f,
+    ///     ),
+    /// );
+    /// ```
+    ///
+    /// When starting from a slice rather than an array, fallible conversion
+    /// APIs can be used:
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// use std::convert::TryInto;
+    ///
+    /// fn read_be_u256(input: &mut &[u8]) -> u256 {
+    ///     let (int_bytes, rest) = input.split_at(std::mem::size_of::<u256>());
+    ///     *input = rest;
+    ///     u256::from_be_bytes(int_bytes.try_into().unwrap())
+    /// }
+    /// ```
+    #[inline]
+    pub fn from_be_bytes(bytes: [u8; mem::size_of::<Self>()]) -> Self {
+        Self::from_be(Self::from_ne_bytes(bytes))
+    }
+
+    /// Create an integer value from its representation as a byte array in
+    /// little endian.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let value = u256::from_le_bytes([
+    ///     0x1f, 0x1e, 0x1d, 0x1c, 0x1b, 0x1a, 0x19, 0x18, 0x17, 0x16, 0x15, 0x14, 0x13, 0x12, 0x11, 0x10,
+    ///     0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00,
+    /// ]);
+    /// assert_eq!(
+    ///     value,
+    ///     u256::from_words(
+    ///         0x00010203_04050607_08090a0b_0c0d0e0f,
+    ///         0x10111213_14151617_18191a1b_1c1d1e1f,
+    ///     ),
+    /// );
+    /// ```
+    ///
+    /// When starting from a slice rather than an array, fallible conversion
+    /// APIs can be used:
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// use std::convert::TryInto;
+    ///
+    /// fn read_be_u256(input: &mut &[u8]) -> u256 {
+    ///     let (int_bytes, rest) = input.split_at(std::mem::size_of::<u256>());
+    ///     *input = rest;
+    ///     u256::from_le_bytes(int_bytes.try_into().unwrap())
+    /// }
+    /// ```
+    #[inline]
+    pub fn from_le_bytes(bytes: [u8; mem::size_of::<Self>()]) -> Self {
+        Self::from_le(Self::from_ne_bytes(bytes))
+    }
+
+    /// Create an integer value from its memory representation as a byte array
+    /// in native endianness.
+    ///
+    /// As the target platform's native endianness is used, portable code likely
+    /// wants to use [`from_be_bytes`] or [`from_le_bytes`], as appropriate
+    /// instead.
+    ///
+    /// [`from_be_bytes`]: #method.from_be_bytes
+    /// [`from_le_bytes`]: #method.from_le_bytes
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// let value = u256::from_ne_bytes(if cfg!(target_endian = "big") {
+    ///     [
+    ///         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    ///         0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+    ///     ]
+    /// } else {
+    ///     [
+    ///         0x1f, 0x1e, 0x1d, 0x1c, 0x1b, 0x1a, 0x19, 0x18, 0x17, 0x16, 0x15, 0x14, 0x13, 0x12, 0x11, 0x10,
+    ///         0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00,
+    ///     ]
+    /// });
+    /// assert_eq!(
+    ///     value,
+    ///     u256::from_words(
+    ///         0x00010203_04050607_08090a0b_0c0d0e0f,
+    ///         0x10111213_14151617_18191a1b_1c1d1e1f,
+    ///     ),
+    /// );
+    /// ```
+    ///
+    /// When starting from a slice rather than an array, fallible conversion
+    /// APIs can be used:
+    ///
+    /// ```
+    /// # use ethrs_num::u256;
+    /// use std::convert::TryInto;
+    ///
+    /// fn read_be_u256(input: &mut &[u8]) -> u256 {
+    ///     let (int_bytes, rest) = input.split_at(std::mem::size_of::<u256>());
+    ///     *input = rest;
+    ///     u256::from_ne_bytes(int_bytes.try_into().unwrap())
+    /// }
+    /// ```
+    #[inline]
+    pub fn from_ne_bytes(bytes: [u8; mem::size_of::<Self>()]) -> Self {
+        unsafe { mem::transmute(bytes) }
     }
 }
