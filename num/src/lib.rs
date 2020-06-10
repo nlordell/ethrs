@@ -29,14 +29,6 @@ impl u256 {
 
 // TODO(nlordell):
 //
-// # Methods
-//
-// - leading_zeros (intrinsic)
-// - trailing_zeros (intrinsic)
-//
-// - rotate_left (intrinsic)
-// - rotate_right (intrinsic)
-//
 // # Trait Implementations
 //
 // - Debug

@@ -32,19 +32,19 @@ where
 fn intrinsics(c: &mut Criterion) {
     let value = ethrs_num::u256::new(u128::MAX) << 2u32;
 
-    c.bench_function("u256::rotate_left", |b| {
+    c.bench_function("ethrs_num::u256::rotate_left", |b| {
         b.iter(|| black_box(value).rotate_left(black_box(21)))
     });
 
-    c.bench_function("u256::rotate_right", |b| {
+    c.bench_function("ethrs_num::u256::rotate_right", |b| {
         b.iter(|| black_box(value).rotate_right(black_box(21)))
     });
 
-    c.bench_function("u256::ctlz", |b| {
+    c.bench_function("ethrs_num::u256::ctlz", |b| {
         b.iter(|| black_box(value).leading_zeros())
     });
 
-    c.bench_function("u256::cttz", |b| {
+    c.bench_function("ethrs_num::u256::cttz", |b| {
         b.iter(|| black_box(value).trailing_zeros())
     });
 }

@@ -86,4 +86,18 @@ def! {
         let res = a.wrapping_shr(b);
         r.as_mut_ptr().write(res);
     }
+
+    pub unsafe fn rotate_left(r: &mut MaybeUninit<u128>, a: &u128, b: u32) {
+        r.as_mut_ptr().write(a.rotate_left(b))
+    }
+    pub unsafe fn rotate_right(r: &mut MaybeUninit<u128>, a: &u128, b: u32) {
+        r.as_mut_ptr().write(a.rotate_right(b))
+    }
+
+    pub unsafe fn ctlz(a: &u128) -> u32 {
+        a.leading_zeros()
+    }
+    pub unsafe fn cttz(a: &u128) -> u32 {
+        a.trailing_zeros()
+    }
 }

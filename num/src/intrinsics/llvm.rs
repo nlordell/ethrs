@@ -63,4 +63,10 @@ def! {
 
     pub fn shr2(r: &mut u256, a: u32);
     pub fn shr3(r: &mut MaybeUninit<u256>, a: &u256, b: u32);
+
+    pub fn rotate_left(r: &mut MaybeUninit<u256>, a: &u256, b: u32);
+    pub fn rotate_right(r: &mut MaybeUninit<u256>, a: &u256, b: u32);
+
+    pub fn ctlz(a: &u256) -> u32;
+    pub fn cttz(a: &u256) -> u32;
 }
