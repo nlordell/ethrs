@@ -47,17 +47,25 @@ pub fn multi3(res: &mut MaybeUninit<u256>, a: &u256, b: &u256) {
     }
 }
 
+pub fn mul2(r: &mut u256, a: &u256) {
+    let (a, b) = (*r, a);
+    // SAFETY: `multi3` does not write `MaybeUninit::uninit()` to `res` and
+    // `u256` does not implement `Drop`.
+    let res = unsafe { &mut *(r as *mut u256).cast() };
+    multi3(res, &a, b);
+}
+
 #[inline]
-pub fn mulc(res: &mut MaybeUninit<u256>, a: &u256, b: &u256) -> bool {
-    let mut r = mulddi3(a.low(), b.low());
+pub fn mulc(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) -> bool {
+    let mut res = mulddi3(a.low(), b.low());
 
     let (hi_lo, overflow_hi_lo) = a.high().overflowing_mul(*b.low());
     let (lo_hi, overflow_lo_hi) = a.low().overflowing_mul(*b.high());
     let (high, overflow_high) = hi_lo.overflowing_add(lo_hi);
-    *r.high_mut() += high;
+    *res.high_mut() += high;
 
     unsafe {
-        res.as_mut_ptr().write(r);
+        r.as_mut_ptr().write(res);
     }
     overflow_hi_lo | overflow_lo_hi | overflow_high
 }

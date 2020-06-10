@@ -75,39 +75,38 @@ impl u256 {
         a.count_zeros() + b.count_zeros()
     }
 
-    /// Returns the number of leading zeros in the binary representation of `self`.
+    /// Returns the number of leading zeros in the binary representation of
+    /// `self`.
     ///
     /// # Examples
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// let n = u256::MAX >> 2u32;
     /// assert_eq!(n.leading_zeros(), 2);
     /// ```
     #[inline]
     pub fn leading_zeros(self) -> u32 {
-        // intrinsics::ctlz(self) as u32
-        todo!()
+        intrinsics::ctlz(&self)
     }
 
-    /// Returns the number of trailing zeros in the binary representation
-    /// of `self`.
+    /// Returns the number of trailing zeros in the binary representation of
+    /// `self`.
     ///
     /// # Examples
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// let n = u256::new(0b0101000);
     /// assert_eq!(n.trailing_zeros(), 3);
     /// ```
     #[inline]
     pub fn trailing_zeros(self) -> u32 {
-        // intrinsics::cttz(self) as u32
-        todo!()
+        intrinsics::cttz(&self)
     }
 
     /// Returns the number of leading ones in the binary representation of
@@ -117,7 +116,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// let n = !(u256::MAX >> 2u32);
     /// assert_eq!(n.leading_ones(), 2);
@@ -134,7 +133,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// let n = u256::new(0b1010111);
     /// assert_eq!(n.trailing_ones(), 3);
@@ -154,7 +153,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// let n = u256::from_words(
     ///     0x13f40000000000000000000000000000,
@@ -167,13 +166,13 @@ impl u256 {
                           without modifying the original"]
     #[inline]
     pub fn rotate_left(self, n: u32) -> Self {
-        let _ = n;
-        // intrinsics::rotate_left(self, n)
-        todo!()
+        let mut r = MaybeUninit::uninit();
+        intrinsics::rotate_left(&mut r, &self, n);
+        unsafe { r.assume_init() }
     }
 
-    /// Shifts the bits to the right by a specified amount, `n`, wrapping
-    /// the truncated bits to the beginning of the resulting integer.
+    /// Shifts the bits to the right by a specified amount, `n`, wrapping the
+    /// truncated bits to the beginning of the resulting integer.
     ///
     /// Please note this isn't the same operation as the `>>` shifting operator!
     ///
@@ -181,7 +180,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// let n = u256::new(0x4f7613f4);
     /// let m = u256::from_words(
@@ -195,9 +194,9 @@ impl u256 {
                           without modifying the original"]
     #[inline]
     pub fn rotate_right(self, n: u32) -> Self {
-        let _ = n;
-        // intrinsics::rotate_right(self, n)
-        todo!()
+        let mut r = MaybeUninit::uninit();
+        intrinsics::rotate_right(&mut r, &self, n);
+        unsafe { r.assume_init() }
     }
 
     /// Reverses the byte order of the integer.
@@ -370,8 +369,8 @@ impl u256 {
         }
     }
 
-    /// Checked integer addition. Computes `self + rhs`, returning `None`
-    /// if overflow occurred.
+    /// Checked integer addition. Computes `self + rhs`, returning `None` if
+    /// overflow occurred.
     ///
     /// # Examples
     ///
@@ -394,8 +393,8 @@ impl u256 {
         }
     }
 
-    /// Checked integer subtraction. Computes `self - rhs`, returning
-    /// `None` if overflow occurred.
+    /// Checked integer subtraction. Computes `self - rhs`, returning `None` if
+    /// overflow occurred.
     ///
     /// # Examples
     ///
@@ -418,8 +417,8 @@ impl u256 {
         }
     }
 
-    /// Checked integer multiplication. Computes `self * rhs`, returning
-    /// `None` if overflow occurred.
+    /// Checked integer multiplication. Computes `self * rhs`, returning `None`
+    /// if overflow occurred.
     ///
     /// # Examples
     ///
@@ -442,8 +441,8 @@ impl u256 {
         }
     }
 
-    /// Checked integer division. Computes `self / rhs`, returning `None`
-    /// if `rhs == 0`.
+    /// Checked integer division. Computes `self / rhs`, returning `None` if
+    /// `rhs == 0`.
     ///
     /// # Examples
     ///
@@ -461,12 +460,12 @@ impl u256 {
         if rhs == u256::ZERO {
             None
         } else {
-            todo!()
+            Some(self / rhs)
         }
     }
 
-    /// Checked Euclidean division. Computes `self.div_euclid(rhs)`, returning `None`
-    /// if `rhs == 0`.
+    /// Checked Euclidean division. Computes `self.div_euclid(rhs)`, returning
+    /// `None` if `rhs == 0`.
     ///
     /// # Examples
     ///
@@ -488,8 +487,8 @@ impl u256 {
         }
     }
 
-    /// Checked integer remainder. Computes `self % rhs`, returning `None`
-    /// if `rhs == 0`.
+    /// Checked integer remainder. Computes `self % rhs`, returning `None` if
+    /// `rhs == 0`.
     ///
     /// # Examples
     ///
@@ -507,12 +506,12 @@ impl u256 {
         if rhs == u256::ZERO {
             None
         } else {
-            todo!()
+            Some(self % rhs)
         }
     }
 
-    /// Checked Euclidean modulo. Computes `self.rem_euclid(rhs)`, returning `None`
-    /// if `rhs == 0`.
+    /// Checked Euclidean modulo. Computes `self.rem_euclid(rhs)`, returning
+    /// `None` if `rhs == 0`.
     ///
     /// # Examples
     ///
@@ -534,8 +533,7 @@ impl u256 {
         }
     }
 
-    /// Checked negation. Computes `-self`, returning `None` unless `self ==
-    /// 0`.
+    /// Checked negation. Computes `-self`, returning `None` unless `self == 0`.
     ///
     /// Note that negating any positive integer will overflow.
     ///
@@ -558,8 +556,8 @@ impl u256 {
         }
     }
 
-    /// Checked shift left. Computes `self << rhs`, returning `None`
-    /// if `rhs` is larger than or equal to the number of bits in `self`.
+    /// Checked shift left. Computes `self << rhs`, returning `None` if `rhs` is
+    /// larger than or equal to the number of bits in `self`.
     ///
     /// # Examples
     ///
@@ -582,8 +580,8 @@ impl u256 {
         }
     }
 
-    /// Checked shift right. Computes `self >> rhs`, returning `None`
-    /// if `rhs` is larger than or equal to the number of bits in `self`.
+    /// Checked shift right. Computes `self >> rhs`, returning `None` if `rhs`
+    /// is larger than or equal to the number of bits in `self`.
     ///
     /// # Examples
     ///
@@ -646,8 +644,8 @@ impl u256 {
         todo!()
     }
 
-    /// Saturating integer addition. Computes `self + rhs`, saturating at
-    /// the numeric bounds instead of overflowing.
+    /// Saturating integer addition. Computes `self + rhs`, saturating at the
+    /// numeric bounds instead of overflowing.
     ///
     /// # Examples
     ///
@@ -666,8 +664,8 @@ impl u256 {
         self.checked_add(rhs).unwrap_or(u256::MAX)
     }
 
-    /// Saturating integer subtraction. Computes `self - rhs`, saturating
-    /// at the numeric bounds instead of overflowing.
+    /// Saturating integer subtraction. Computes `self - rhs`, saturating at the
+    /// numeric bounds instead of overflowing.
     ///
     /// # Examples
     ///
@@ -685,8 +683,8 @@ impl u256 {
         self.checked_sub(rhs).unwrap_or(u256::MIN)
     }
 
-    /// Saturating integer multiplication. Computes `self * rhs`,
-    /// saturating at the numeric bounds instead of overflowing.
+    /// Saturating integer multiplication. Computes `self * rhs`, saturating at
+    /// the numeric bounds instead of overflowing.
     ///
     /// # Examples
     ///
@@ -707,8 +705,8 @@ impl u256 {
         }
     }
 
-    /// Saturating integer exponentiation. Computes `self.pow(exp)`,
-    /// saturating at the numeric bounds instead of overflowing.
+    /// Saturating integer exponentiation. Computes `self.pow(exp)`, saturating
+    /// at the numeric bounds instead of overflowing.
     ///
     /// # Examples
     ///
@@ -729,8 +727,8 @@ impl u256 {
         }
     }
 
-    /// Wrapping (modular) addition. Computes `self + rhs`,
-    /// wrapping around at the boundary of the type.
+    /// Wrapping (modular) addition. Computes `self + rhs`, wrapping around at
+    /// the boundary of the type.
     ///
     /// # Examples
     ///
@@ -750,8 +748,8 @@ impl u256 {
         unsafe { result.assume_init() }
     }
 
-    /// Wrapping (modular) subtraction. Computes `self - rhs`,
-    /// wrapping around at the boundary of the type.
+    /// Wrapping (modular) subtraction. Computes `self - rhs`, wrapping around
+    /// at the boundary of the type.
     ///
     /// # Examples
     ///
@@ -771,8 +769,8 @@ impl u256 {
         unsafe { result.assume_init() }
     }
 
-    /// Wrapping (modular) multiplication. Computes `self *
-    /// rhs`, wrapping around at the boundary of the type.
+    /// Wrapping (modular) multiplication. Computes `self * rhs`, wrapping
+    /// around at the boundary of the type.
     ///
     /// # Examples
     ///
@@ -795,11 +793,10 @@ impl u256 {
         unsafe { result.assume_init() }
     }
 
-    /// Wrapping (modular) division. Computes `self / rhs`.
-    /// Wrapped division on unsigned types is just normal division.
-    /// There's no way wrapping could ever happen.
-    /// This function exists, so that all operations
-    /// are accounted for in the wrapping operations.
+    /// Wrapping (modular) division. Computes `self / rhs`. Wrapped division on
+    /// unsigned types is just normal division. There's no way wrapping could
+    /// ever happen. This function exists, so that all operations are accounted
+    /// for in the wrapping operations.
     ///
     /// # Examples
     ///
@@ -816,14 +813,12 @@ impl u256 {
         self / rhs
     }
 
-    /// Wrapping Euclidean division. Computes `self.div_euclid(rhs)`.
-    /// Wrapped division on unsigned types is just normal division.
-    /// There's no way wrapping could ever happen.
-    /// This function exists, so that all operations
-    /// are accounted for in the wrapping operations.
-    /// Since, for the positive integers, all common
-    /// definitions of division are equal, this
-    /// is exactly equal to `self.wrapping_div(rhs)`.
+    /// Wrapping Euclidean division. Computes `self.div_euclid(rhs)`. Wrapped
+    /// division on unsigned types is just normal division. There's no way
+    /// wrapping could ever happen. This function exists, so that all operations
+    /// are accounted for in the wrapping operations. Since, for the positive
+    /// integers, all common definitions of division are equal, this is exactly
+    /// equal to `self.wrapping_div(rhs)`.
     ///
     /// # Examples
     ///
@@ -840,12 +835,10 @@ impl u256 {
         self / rhs
     }
 
-    /// Wrapping (modular) remainder. Computes `self % rhs`.
-    /// Wrapped remainder calculation on unsigned types is
-    /// just the regular remainder calculation.
-    /// There's no way wrapping could ever happen.
-    /// This function exists, so that all operations
-    /// are accounted for in the wrapping operations.
+    /// Wrapping (modular) remainder. Computes `self % rhs`. Wrapped remainder
+    /// calculation on unsigned types is just the regular remainder calculation.
+    /// There's no way wrapping could ever happen. This function exists, so that
+    /// all operations are accounted for in the wrapping operations.
     ///
     /// # Examples
     ///
@@ -862,15 +855,12 @@ impl u256 {
         self % rhs
     }
 
-    /// Wrapping Euclidean modulo. Computes `self.rem_euclid(rhs)`.
-    /// Wrapped modulo calculation on unsigned types is
-    /// just the regular remainder calculation.
-    /// There's no way wrapping could ever happen.
-    /// This function exists, so that all operations
-    /// are accounted for in the wrapping operations.
-    /// Since, for the positive integers, all common
-    /// definitions of division are equal, this
-    /// is exactly equal to `self.wrapping_rem(rhs)`.
+    /// Wrapping Euclidean modulo. Computes `self.rem_euclid(rhs)`. Wrapped
+    /// modulo calculation on unsigned types is just the regular remainder
+    /// calculation. There's no way wrapping could ever happen. This function
+    /// exists, so that all operations are accounted for in the wrapping
+    /// operations. Since, for the positive integers, all common definitions of
+    /// division are equal, this is exactly equal to `self.wrapping_rem(rhs)`.
     ///
     /// # Examples
     ///
@@ -887,15 +877,15 @@ impl u256 {
         self % rhs
     }
 
-    /// Wrapping (modular) negation. Computes `-self`,
-    /// wrapping around at the boundary of the type.
+    /// Wrapping (modular) negation. Computes `-self`, wrapping around at the
+    /// boundary of the type.
     ///
-    /// Since unsigned types do not have negative equivalents
-    /// all applications of this function will wrap (except for `-0`).
-    /// For values smaller than the corresponding signed type's maximum
-    /// the result is the same as casting the corresponding signed value.
-    /// Any larger values are equivalent to `MAX + 1 - (val - MAX - 1)` where
-    /// `MAX` is the corresponding signed type's maximum.
+    /// Since unsigned types do not have negative equivalents all applications
+    /// of this function will wrap (except for `-0`). For values smaller than
+    /// the corresponding signed type's maximum the result is the same as
+    /// casting the corresponding signed value. Any larger values are equivalent
+    /// to `MAX + 1 - (val - MAX - 1)` where `MAX` is the corresponding signed
+    /// type's maximum.
     ///
     /// # Examples
     ///
@@ -919,16 +909,15 @@ impl u256 {
         self.overflowing_neg().0
     }
 
-    /// Panic-free bitwise shift-left; yields `self << mask(rhs)`,
-    /// where `mask` removes any high-order bits of `rhs` that
-    /// would cause the shift to exceed the bitwidth of the type.
+    /// Panic-free bitwise shift-left; yields `self << mask(rhs)`, where `mask`
+    /// removes any high-order bits of `rhs` that would cause the shift to
+    /// exceed the bitwidth of the type.
     ///
-    /// Note that this is *not* the same as a rotate-left; the
-    /// RHS of a wrapping shift-left is restricted to the range
-    /// of the type, rather than the bits shifted out of the LHS
-    /// being returned to the other end. The primitive integer
-    /// types all implement a `rotate_left` function, which may
-    /// be what you want instead.
+    /// Note that this is *not* the same as a rotate-left; the RHS of a wrapping
+    /// shift-left is restricted to the range of the type, rather than the bits
+    /// shifted out of the LHS being returned to the other end. The primitive
+    /// integer types all implement a `rotate_left` function, which maybe what
+    /// you want instead.
     ///
     /// # Examples
     ///
@@ -949,16 +938,15 @@ impl u256 {
         unsafe { result.assume_init() }
     }
 
-    /// Panic-free bitwise shift-right; yields `self >> mask(rhs)`,
-    /// where `mask` removes any high-order bits of `rhs` that
-    /// would cause the shift to exceed the bitwidth of the type.
+    /// Panic-free bitwise shift-right; yields `self >> mask(rhs)`, where `mask`
+    /// removes any high-order bits of `rhs` that would cause the shift to
+    /// exceed the bitwidth of the type.
     ///
-    /// Note that this is *not* the same as a rotate-right; the
-    /// RHS of a wrapping shift-right is restricted to the range
-    /// of the type, rather than the bits shifted out of the LHS
-    /// being returned to the other end. The primitive integer
-    /// types all implement a `rotate_right` function, which may
-    /// be what you want instead.
+    /// Note that this is *not* the same as a rotate-right; the RHS of a
+    /// wrapping shift-right is restricted to the range of the type, rather than
+    /// the bits shifted out of the LHS being returned to the other end. The
+    /// primitive integer types all implement a `rotate_right` function, which
+    /// may be what you want instead.
     ///
     /// # Examples
     ///
@@ -979,8 +967,8 @@ impl u256 {
         unsafe { result.assume_init() }
     }
 
-    /// Wrapping (modular) exponentiation. Computes `self.pow(exp)`,
-    /// wrapping around at the boundary of the type.
+    /// Wrapping (modular) exponentiation. Computes `self.pow(exp)`, wrapping
+    /// around at the boundary of the type.
     ///
     /// # Examples
     ///
@@ -1021,9 +1009,9 @@ impl u256 {
 
     /// Calculates `self` + `rhs`
     ///
-    /// Returns a tuple of the addition along with a boolean indicating
-    /// whether an arithmetic overflow would occur. If an overflow would
-    /// have occurred then the wrapped value is returned.
+    /// Returns a tuple of the addition along with a boolean indicating whether
+    /// an arithmetic overflow would occur. If an overflow would have occurred
+    /// then the wrapped value is returned.
     ///
     /// # Examples
     ///
@@ -1046,8 +1034,8 @@ impl u256 {
     /// Calculates `self` - `rhs`
     ///
     /// Returns a tuple of the subtraction along with a boolean indicating
-    /// whether an arithmetic overflow would occur. If an overflow would
-    /// have occurred then the wrapped value is returned.
+    /// whether an arithmetic overflow would occur. If an overflow would have
+    /// occurred then the wrapped value is returned.
     ///
     /// # Examples
     ///
@@ -1069,9 +1057,9 @@ impl u256 {
 
     /// Calculates the multiplication of `self` and `rhs`.
     ///
-    /// Returns a tuple of the multiplication along with a boolean
-    /// indicating whether an arithmetic overflow would occur. If an
-    /// overflow would have occurred then the wrapped value is returned.
+    /// Returns a tuple of the multiplication along with a boolean indicating
+    /// whether an arithmetic overflow would occur. If an overflow would have
+    /// occurred then the wrapped value is returned.
     ///
     /// # Examples
     ///
@@ -1099,10 +1087,9 @@ impl u256 {
 
     /// Calculates the divisor when `self` is divided by `rhs`.
     ///
-    /// Returns a tuple of the divisor along with a boolean indicating
-    /// whether an arithmetic overflow would occur. Note that for unsigned
-    /// integers overflow never occurs, so the second value is always
-    /// `false`.
+    /// Returns a tuple of the divisor along with a boolean indicating whether
+    /// an arithmetic overflow would occur. Note that for unsigned integers
+    /// overflow never occurs, so the second value is always `false`.
     ///
     /// # Panics
     ///
@@ -1125,13 +1112,11 @@ impl u256 {
 
     /// Calculates the quotient of Euclidean division `self.div_euclid(rhs)`.
     ///
-    /// Returns a tuple of the divisor along with a boolean indicating
-    /// whether an arithmetic overflow would occur. Note that for unsigned
-    /// integers overflow never occurs, so the second value is always
-    /// `false`.
-    /// Since, for the positive integers, all common
-    /// definitions of division are equal, this
-    /// is exactly equal to `self.overflowing_div(rhs)`.
+    /// Returns a tuple of the divisor along with a boolean indicating whether
+    /// an arithmetic overflow would occur. Note that for unsigned integers
+    /// overflow never occurs, so the second value is always `false`.  Since,
+    /// for the positive integers, all common definitions of division are equal,
+    /// this is exactly equal to `self.overflowing_div(rhs)`.
     ///
     /// # Panics
     ///
@@ -1156,8 +1141,8 @@ impl u256 {
     ///
     /// Returns a tuple of the remainder after dividing along with a boolean
     /// indicating whether an arithmetic overflow would occur. Note that for
-    /// unsigned integers overflow never occurs, so the second value is
-    /// always `false`.
+    /// unsigned integers overflow never occurs, so the second value is always
+    /// `false`.
     ///
     /// # Panics
     ///
@@ -1178,15 +1163,15 @@ impl u256 {
         (self % rhs, false)
     }
 
-    /// Calculates the remainder `self.rem_euclid(rhs)` as if by Euclidean division.
+    /// Calculates the remainder `self.rem_euclid(rhs)` as if by Euclidean
+    /// division.
     ///
     /// Returns a tuple of the modulo after dividing along with a boolean
     /// indicating whether an arithmetic overflow would occur. Note that for
-    /// unsigned integers overflow never occurs, so the second value is
-    /// always `false`.
-    /// Since, for the positive integers, all common
-    /// definitions of division are equal, this operation
-    /// is exactly equal to `self.overflowing_rem(rhs)`.
+    /// unsigned integers overflow never occurs, so the second value is always
+    /// `false`. Since, for the positive integers, all common definitions of
+    /// division are equal, this operation is exactly equal to
+    /// `self.overflowing_rem(rhs)`.
     ///
     /// # Panics
     ///
@@ -1209,10 +1194,10 @@ impl u256 {
 
     /// Negates self in an overflowing fashion.
     ///
-    /// Returns `!self + 1` using wrapping operations to return the value
-    /// that represents the negation of this unsigned value. Note that for
-    /// positive unsigned values overflow always occurs, but negating 0 does
-    /// not overflow.
+    /// Returns `!self + 1` using wrapping operations to return the value that
+    /// represents the negation of this unsigned value. Note that for positive
+    /// unsigned values overflow always occurs, but negating 0 does not
+    /// overflow.
     ///
     /// # Examples
     ///
@@ -1232,9 +1217,9 @@ impl u256 {
     ///
     /// Returns a tuple of the shifted version of self along with a boolean
     /// indicating whether the shift value was larger than or equal to the
-    /// number of bits. If the shift value is too large, then value is
-    /// masked (N-1) where N is the number of bits, and this value is then
-    /// used to perform the shift.
+    /// number of bits. If the shift value is too large, then value is masked
+    /// (N-1) where N is the number of bits, and this value is then used to
+    /// perform the shift.
     ///
     /// # Examples
     ///
@@ -1256,9 +1241,9 @@ impl u256 {
     ///
     /// Returns a tuple of the shifted version of self along with a boolean
     /// indicating whether the shift value was larger than or equal to the
-    /// number of bits. If the shift value is too large, then value is
-    /// masked (N-1) where N is the number of bits, and this value is then
-    /// used to perform the shift.
+    /// number of bits. If the shift value is too large, then value is masked
+    /// (N-1) where N is the number of bits, and this value is then used to
+    /// perform the shift.
     ///
     /// # Examples
     ///
@@ -1367,9 +1352,8 @@ impl u256 {
 
     /// Performs Euclidean division.
     ///
-    /// Since, for the positive integers, all common
-    /// definitions of division are equal, this
-    /// is exactly equal to `self / rhs`.
+    /// Since, for the positive integers, all common definitions of division are
+    /// equal, this is exactly equal to `self / rhs`.
     ///
     /// # Panics
     ///
@@ -1392,9 +1376,8 @@ impl u256 {
 
     /// Calculates the least remainder of `self (mod rhs)`.
     ///
-    /// Since, for the positive integers, all common
-    /// definitions of division are equal, this
-    /// is exactly equal to `self % rhs`.
+    /// Since, for the positive integers, all common definitions of division are
+    /// equal, this is exactly equal to `self % rhs`.
     ///
     /// # Panics
     ///
@@ -1431,40 +1414,37 @@ impl u256 {
         self.count_ones() == 1
     }
 
-    /// Returns one less than next power of two. (For 8u8 next power of two
-    /// is 8u8 and for 6u8 it is 8u8).
+    /// Returns one less than next power of two. (For 8u8 next power of two is
+    /// 8u8 and for 6u8 it is 8u8).
     ///
     /// 8u8.one_less_than_next_power_of_two() == 7
     /// 6u8.one_less_than_next_power_of_two() == 7
     ///
     /// This method cannot overflow, as in the `next_power_of_two` overflow
-    /// cases it instead ends up returning the maximum value of the type,
-    /// and can return 0 for 0.
+    /// cases it instead ends up returning the maximum value of the type, and
+    /// can return 0 for 0.
     #[inline]
     fn one_less_than_next_power_of_two(self) -> Self {
-        // if self <= 1 { return 0; }
-        //
-        // let p = self - 1;
-        // // SAFETY: Because `p > 0`, it cannot consist entirely of leading zeros.
-        // // That means the shift is always in-bounds, and some processors
-        // // (such as intel pre-haswell) have more efficient ctlz
-        // // intrinsics when the argument is non-zero.
-        // let z = unsafe { intrinsics::ctlz_nonzero(p) };
-        // u256::max_value() >> z
-        todo!()
+        if self <= 1 {
+            return u256::ZERO;
+        }
+
+        let p = self - 1;
+        let z = p.leading_zeros();
+        u256::MAX >> z
     }
 
     /// Returns the smallest power of two greater than or equal to `self`.
     ///
-    /// When return value overflows (i.e., `self > (1 << (N-1))` for type
-    /// `uN`), it panics in debug mode and return value is wrapped to 0 in
-    /// release mode (the only situation in which method can return 0).
+    /// When return value overflows (i.e., `self > (1 << (N-1))` for type `uN`),
+    /// it panics in debug mode and return value is wrapped to 0 in release mode
+    /// (the only situation in which method can return 0).
     ///
     /// # Examples
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(2).next_power_of_two(), u256::new(2));
     /// assert_eq!(u256::new(3).next_power_of_two(), u256::new(4));
@@ -1474,15 +1454,15 @@ impl u256 {
         self.one_less_than_next_power_of_two() + 1
     }
 
-    /// Returns the smallest power of two greater than or equal to `n`. If
-    /// the next power of two is greater than the type's maximum value,
-    /// `None` is returned, otherwise the power of two is wrapped in `Some`.
+    /// Returns the smallest power of two greater than or equal to `n`. If the
+    /// next power of two is greater than the type's maximum value, `None` is
+    /// returned, otherwise the power of two is wrapped in `Some`.
     ///
     /// # Examples
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(2).checked_next_power_of_two(), Some(u256::new(2)));
     /// assert_eq!(u256::new(3).checked_next_power_of_two(), Some(u256::new(4)));
@@ -1494,15 +1474,15 @@ impl u256 {
             .checked_add(u256::ONE)
     }
 
-    /// Returns the smallest power of two greater than or equal to `n`. If
-    /// the next power of two is greater than the type's maximum value, the
-    /// return value is wrapped to `0`.
+    /// Returns the smallest power of two greater than or equal to `n`. If the
+    /// next power of two is greater than the type's maximum value, the return
+    /// value is wrapped to `0`.
     ///
     /// # Examples
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(2).wrapping_next_power_of_two(), u256::new(2));
     /// assert_eq!(u256::new(3).wrapping_next_power_of_two(), u256::new(4));
@@ -1514,8 +1494,8 @@ impl u256 {
             .wrapping_add(u256::ONE)
     }
 
-    /// Return the memory representation of this integer as a byte array in
-    /// big endian (network) byte order.
+    /// Return the memory representation of this integer as a byte array in big
+    /// endian (network) byte order.
     ///
     /// # Examples
     ///
@@ -1539,7 +1519,7 @@ impl u256 {
     }
 
     /// Return the memory representation of this integer as a byte array in
-    /// little-endian byte order.
+    /// little endian byte order.
     ///
     /// # Examples
     ///

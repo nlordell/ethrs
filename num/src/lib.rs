@@ -31,22 +31,11 @@ impl u256 {
 //
 // # Methods
 //
-// - from_str_radix
-//
-// - count_ones (intrinsic)
-// - count_zeros (intrinsic)
-// - leading_ones (intrinsic)
 // - leading_zeros (intrinsic)
-// - trailing_ones (intrinsic)
 // - trailing_zeros (intrinsic)
 //
 // - rotate_left (intrinsic)
 // - rotate_right (intrinsic)
-//
-// - checked_next_power_of_two
-// - is_power_of_two (intrinsic)
-// - next_power_of_two
-// - wrapping_next_power_of_two (unstable)
 //
 // # Trait Implementations
 //

@@ -260,7 +260,7 @@ macro_rules! binop_assign {
         }
         #[cfg(debug_assertions)]
         {
-            *($lhs) = *($lhs) $binop *($rhs);
+            *($lhs) = *($lhs) $binop $rhs;
         }
     }};
 }
@@ -324,7 +324,7 @@ macro_rules! impl_shifts_assign {
         impl std::ops::$op<u32> for u256 {
             #[inline]
             fn $method(&mut self, rhs: u32) {
-                binop_assign!($wrap, $sh [ self, &rhs ])
+                binop_assign!($wrap, $sh [ self, rhs ])
             }
         }
 
