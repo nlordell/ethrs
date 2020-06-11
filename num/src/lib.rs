@@ -1,6 +1,5 @@
 mod cmp;
 mod convert;
-mod endian;
 pub mod intrinsics;
 mod iter;
 mod ops;
@@ -24,6 +23,88 @@ impl u256 {
     #[inline]
     pub const fn new(value: u128) -> Self {
         u256::from_words(0, value)
+    }
+
+    /// Creates a new 256-bit integer value from high and low words.
+    #[inline]
+    pub const fn from_words(hi: u128, lo: u128) -> Self {
+        #[cfg(target_endian = "little")]
+        {
+            u256([lo, hi])
+        }
+        #[cfg(target_endian = "big")]
+        {
+            u256([hi, lo])
+        }
+    }
+
+    /// Splits a 256-bit integer into high and low words.
+    #[inline]
+    pub const fn into_words(self) -> (u128, u128) {
+        #[cfg(target_endian = "little")]
+        {
+            let u256([lo, hi]) = self;
+            (hi, lo)
+        }
+        #[cfg(target_endian = "big")]
+        {
+            let u256([hi, lo]) = self;
+            (hi, lo)
+        }
+    }
+
+    /// Get the low 128-bit word for this unsigned integer.
+    #[inline]
+    pub fn low(&self) -> &u128 {
+        #[cfg(target_endian = "little")]
+        {
+            &self.0[0]
+        }
+        #[cfg(target_endian = "big")]
+        {
+            &self.0[1]
+        }
+    }
+
+    /// Get the low 128-bit word for this unsigned integer as a mutable
+    /// reference.
+    #[inline]
+    pub fn low_mut(&mut self) -> &mut u128 {
+        #[cfg(target_endian = "little")]
+        {
+            &mut self.0[0]
+        }
+        #[cfg(target_endian = "big")]
+        {
+            &mut self.0[1]
+        }
+    }
+
+    /// Get the high 128-bit word for this unsigned integer.
+    #[inline]
+    pub fn high(&self) -> &u128 {
+        #[cfg(target_endian = "little")]
+        {
+            &self.0[1]
+        }
+        #[cfg(target_endian = "big")]
+        {
+            &self.0[0]
+        }
+    }
+
+    /// Get the high 128-bit word for this unsigned integer as a mutable
+    /// reference.
+    #[inline]
+    pub fn high_mut(&mut self) -> &mut u128 {
+        #[cfg(target_endian = "little")]
+        {
+            &mut self.0[1]
+        }
+        #[cfg(target_endian = "big")]
+        {
+            &mut self.0[0]
+        }
     }
 }
 
