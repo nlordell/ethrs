@@ -1,0 +1,411 @@
+//! Module implementing formatting for `u256` type.
+//!
+//! Most of these implementations were ported from the Rust standard library's
+//! implementation for primitive integer types:
+//! https://doc.rust-lang.org/src/core/fmt/num.rs.html
+
+use crate::{u256, AsU256};
+use std::fmt;
+use std::mem::MaybeUninit;
+use std::num::ParseIntError;
+use std::ptr;
+use std::slice;
+use std::str::{self, FromStr};
+
+/// Converts a string slice in a given base to an `u256`.
+pub(crate) fn from_str_radix(src: &str, radix: u32) -> Result<u256, ParseIntError> {
+    assert!(
+        radix >= 2 && radix <= 36,
+        "from_str_radix_int: must lie in the range `[2, 36]` - found {}",
+        radix
+    );
+
+    if src.is_empty() {
+        return Err(Pie::Empty.into());
+    }
+
+    let mut result = u256::ZERO;
+    for &c in src.as_bytes() {
+        let x = match (c as char).to_digit(radix) {
+            Some(x) => x,
+            None => return Err(Pie::InvalidDigit.into()),
+        };
+        result = match result.checked_mul(radix.as_u256()) {
+            Some(result) => result,
+            None => return Err(Pie::Overflow.into()),
+        };
+        result = match result.checked_add(x.as_u256()) {
+            Some(result) => result,
+            None => return Err(Pie::Overflow.into()),
+        };
+    }
+
+    Ok(result)
+}
+
+/// Helper type for constructing `ParseIntError` since there is no public API
+/// for doing so.
+enum Pie {
+    Empty,
+    InvalidDigit,
+    Overflow,
+}
+
+impl Into<ParseIntError> for Pie {
+    fn into(self) -> ParseIntError {
+        unsafe { std::mem::transmute(self) }
+    }
+}
+
+impl FromStr for u256 {
+    type Err = ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        from_str_radix(s, 10)
+    }
+}
+
+impl fmt::Debug for u256 {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // NOTE: Work around `Formatter::debug_{lower,upper}_hex` being private
+        // and not stabilized.
+        const DEBUG_LOWER_HEX: u32 = 1 << 4;
+        const DEBUG_UPPER_HEX: u32 = 1 << 5;
+
+        #[allow(deprecated)]
+        let flags = f.flags();
+
+        if flags & DEBUG_LOWER_HEX != 0 {
+            fmt::LowerHex::fmt(self, f)
+        } else if flags & DEBUG_UPPER_HEX != 0 {
+            fmt::UpperHex::fmt(self, f)
+        } else {
+            fmt::Display::fmt(self, f)
+        }
+    }
+}
+
+const DEC_DIGITS_LUT: &[u8; 200] = b"\
+    0001020304050607080910111213141516171819\
+    2021222324252627282930313233343536373839\
+    4041424344454647484950515253545556575859\
+    6061626364656667686970717273747576777879\
+    8081828384858687888990919293949596979899";
+
+impl fmt::Display for u256 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut n = *self;
+
+        // 2^256 is about 1*10^78, so 79 gives an extra byte of space
+        let mut buf = [MaybeUninit::<u8>::uninit(); 79];
+        let mut curr = buf.len() as isize;
+        let buf_ptr = &mut buf[0] as *mut _ as *mut u8;
+        let lut_ptr = DEC_DIGITS_LUT.as_ptr();
+
+        // SAFETY: Since `d1` and `d2` are always less than or equal to `198`, we
+        // can copy from `lut_ptr[d1..d1 + 1]` and `lut_ptr[d2..d2 + 1]`. To show
+        // that it's OK to copy into `buf_ptr`, notice that at the beginning
+        // `curr == buf.len() == 39 > log(n)` since `n < 2^128 < 10^39`, and at
+        // each step this is kept the same as `n` is divided. Since `n` is always
+        // non-negative, this means that `curr > 0` so `buf_ptr[curr..curr + 1]`
+        // is safe to access.
+        unsafe {
+            // eagerly decode 4 characters at a time
+            while n >= 10000 {
+                let rem = *(n % 10000).low() as isize;
+                n /= 10000;
+
+                let d1 = (rem / 100) << 1;
+                let d2 = (rem % 100) << 1;
+                curr -= 4;
+
+                // We are allowed to copy to `buf_ptr[curr..curr + 3]` here since
+                // otherwise `curr < 0`. But then `n` was originally at least `10000^10`
+                // which is `10^40 > 2^128 > n`.
+                ptr::copy_nonoverlapping(lut_ptr.offset(d1), buf_ptr.offset(curr), 2);
+                ptr::copy_nonoverlapping(lut_ptr.offset(d2), buf_ptr.offset(curr + 2), 2);
+            }
+
+            // if we reach here numbers are <= 9999, so at most 4 chars long
+            let mut n = *n.low() as isize; // possibly reduce 64bit math
+
+            // decode 2 more chars, if > 2 chars
+            if n >= 100 {
+                let d1 = (n % 100) << 1;
+                n /= 100;
+                curr -= 2;
+                ptr::copy_nonoverlapping(lut_ptr.offset(d1), buf_ptr.offset(curr), 2);
+            }
+
+            // decode last 1 or 2 chars
+            if n < 10 {
+                curr -= 1;
+                *buf_ptr.offset(curr) = (n as u8) + b'0';
+            } else {
+                let d1 = n << 1;
+                curr -= 2;
+                ptr::copy_nonoverlapping(lut_ptr.offset(d1), buf_ptr.offset(curr), 2);
+            }
+        }
+
+        // SAFETY: `curr` > 0 (since we made `buf` large enough), and all the chars are valid
+        // UTF-8 since `DEC_DIGITS_LUT` is
+        let buf_slice = unsafe {
+            str::from_utf8_unchecked(slice::from_raw_parts(
+                buf_ptr.offset(curr),
+                buf.len() - curr as usize,
+            ))
+        };
+        f.pad_integral(true, "", buf_slice)
+    }
+}
+
+pub(crate) fn fmt_radix(
+    mut x: u256,
+    base: usize,
+    prefix: &str,
+    digits: &[u8],
+    f: &mut fmt::Formatter,
+) -> fmt::Result {
+    let mut buf = [MaybeUninit::<u8>::uninit(); 256];
+    let mut curr = buf.len();
+
+    // Accumulate each digit of the number from the least significant
+    // to the most significant figure.
+    for byte in buf.iter_mut().rev() {
+        let n = (*x.low() as usize) % base;
+        x /= base.as_u256(); // Deaccumulate the number.
+        unsafe {
+            #[cfg(debug_assertions)]
+            let digit = digits[n];
+            #[cfg(not(debug_assertions))]
+            let digit = digits.get_unchecked(n);
+
+            byte.as_mut_ptr().write(digit); // Store the digit in the buffer.
+        };
+        curr -= 1;
+        if x == 0 {
+            // No more digits left to accumulate.
+            break;
+        };
+    }
+    let buf = &buf[curr..];
+
+    // SAFETY: The only chars in `buf` are created by `Self::digit` which are assumed to be
+    // valid UTF-8
+    let buf = unsafe { str::from_utf8_unchecked(&*(buf as *const _ as *const [u8])) };
+    f.pad_integral(true, prefix, buf)
+}
+
+impl fmt::Binary for u256 {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt_radix(*self, 2, "0b", b"01", f)
+    }
+}
+
+impl fmt::Octal for u256 {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt_radix(*self, 8, "0o", b"01234567", f)
+    }
+}
+
+impl fmt::LowerHex for u256 {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt_radix(*self, 16, "0x", b"0123456789abcdef", f)
+    }
+}
+
+impl fmt::UpperHex for u256 {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt_radix(*self, 16, "0x", b"0123456789ABCDEF", f)
+    }
+}
+
+fn fmt_exp(mut n: u256, upper: bool, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let (mut n, mut exponent, trailing_zeros, added_precision) = {
+        let mut exponent = 0;
+        // count and remove trailing decimal zeroes
+        while n % 10 == 0 && n >= 10 {
+            n /= 10;
+            exponent += 1;
+        }
+        let trailing_zeros = exponent;
+
+        let (added_precision, subtracted_precision) = match f.precision() {
+            Some(fmt_prec) => {
+                // number of decimal digits minus 1
+                let mut tmp = n;
+                let mut prec = 0;
+                while tmp >= 10 {
+                    tmp /= 10;
+                    prec += 1;
+                }
+                (fmt_prec.saturating_sub(prec), prec.saturating_sub(fmt_prec))
+            }
+            None => (0, 0),
+        };
+        for _ in 1..subtracted_precision {
+            n /= 10;
+            exponent += 1;
+        }
+        if subtracted_precision != 0 {
+            let rem = n % 10;
+            n /= 10;
+            exponent += 1;
+            // round up last digit
+            if rem >= 5 {
+                n += 1;
+            }
+        }
+        (n, exponent, trailing_zeros, added_precision)
+    };
+
+    // 39 digits (worst case u128) + . = 40
+    // Since `curr` always decreases by the number of digits copied, this means
+    // that `curr >= 0`.
+    let mut buf = [MaybeUninit::<u8>::uninit(); 40];
+    let mut curr = buf.len() as isize; //index for buf
+    let buf_ptr = &mut buf[0] as *mut _ as *mut u8;
+    let lut_ptr = DEC_DIGITS_LUT.as_ptr();
+
+    // decode 2 chars at a time
+    while n >= 100 {
+        let d1 = ((n.low() % 100) as isize) << 1;
+        curr -= 2;
+        // SAFETY: `d1 <= 198`, so we can copy from `lut_ptr[d1..d1 + 2]` since
+        // `DEC_DIGITS_LUT` has a length of 200.
+        unsafe {
+            ptr::copy_nonoverlapping(lut_ptr.offset(d1), buf_ptr.offset(curr), 2);
+        }
+        n /= 100;
+        exponent += 2;
+    }
+    // n is <= 99, so at most 2 chars long
+    let mut n = *n.low() as isize; // possibly reduce 64bit math
+                                   // decode second-to-last character
+    if n >= 10 {
+        curr -= 1;
+        // SAFETY: Safe since `40 > curr >= 0` (see comment)
+        unsafe {
+            *buf_ptr.offset(curr) = (n as u8 % 10_u8) + b'0';
+        }
+        n /= 10;
+        exponent += 1;
+    }
+    // add decimal point iff >1 mantissa digit will be printed
+    if exponent != trailing_zeros || added_precision != 0 {
+        curr -= 1;
+        // SAFETY: Safe since `40 > curr >= 0`
+        unsafe {
+            *buf_ptr.offset(curr) = b'.';
+        }
+    }
+
+    // SAFETY: Safe since `40 > curr >= 0`
+    let buf_slice = unsafe {
+        // decode last character
+        curr -= 1;
+        *buf_ptr.offset(curr) = (n as u8) + b'0';
+
+        let len = buf.len() - curr as usize;
+        slice::from_raw_parts(buf_ptr.offset(curr), len)
+    };
+
+    // stores 'e' (or 'E') and the up to 2-digit exponent
+    let mut exp_buf = [MaybeUninit::<u8>::uninit(); 3];
+    let exp_ptr = &mut exp_buf[0] as *mut _ as *mut u8;
+    // SAFETY: In either case, `exp_buf` is written within bounds and `exp_ptr[..len]`
+    // is contained within `exp_buf` since `len <= 3`.
+    let exp_slice = unsafe {
+        *exp_ptr.offset(0) = if upper { b'E' } else { b'e' };
+        let len = if exponent < 10 {
+            *exp_ptr.offset(1) = (exponent as u8) + b'0';
+            2
+        } else {
+            let off = exponent << 1;
+            ptr::copy_nonoverlapping(lut_ptr.offset(off), exp_ptr.offset(1), 2);
+            3
+        };
+        slice::from_raw_parts(exp_ptr, len)
+    };
+
+    let _ = (buf_slice, exp_slice);
+    /*
+    let parts = &[
+        flt2dec::Part::Copy(buf_slice),
+        flt2dec::Part::Zero(added_precision),
+        flt2dec::Part::Copy(exp_slice),
+    ];
+    let sign = if f.sign_plus() { "+" } else { "" };
+    let formatted = flt2dec::Formatted { sign, parts };
+    f.pad_formatted_parts(&formatted)
+    */
+    todo!()
+}
+
+impl fmt::LowerExp for u256 {
+    #[allow(unused_comparisons)]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt_exp(*self, false, f)
+    }
+}
+
+impl fmt::UpperExp for u256 {
+    #[allow(unused_comparisons)]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt_exp(*self, true, f)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn parse_int_error() {
+        assert_eq!(u8::from_str_radix("", 2), Err(Pie::Empty.into()));
+        assert_eq!(u8::from_str_radix("?", 2), Err(Pie::InvalidDigit.into()));
+        assert_eq!(u8::from_str_radix("zz", 36), Err(Pie::Overflow.into()));
+    }
+
+    #[test]
+    fn debug() {
+        assert_eq!(
+            format!("{:?}", u256::MAX),
+            "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        );
+        assert_eq!(
+            format!("{:x?}", u256::MAX),
+            "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        );
+        assert_eq!(
+            format!("{:#X?}", u256::MAX),
+            "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+        );
+    }
+
+    #[test]
+    fn display() {
+        assert_eq!(
+            format!("{}", u256::MAX),
+            "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+        );
+    }
+
+    #[test]
+    fn radix() {
+        assert_eq!(format!("{:b}", u256::new(42)), "101010");
+        assert_eq!(format!("{:o}", u256::new(42)), "52");
+        assert_eq!(format!("{:x}", u256::new(42)), "2a");
+    }
+
+    #[test]
+    fn exp() {
+        assert_eq!(format!("{:E}", u256::new(42)), "4.2E1");
+    }
+}

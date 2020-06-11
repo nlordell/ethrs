@@ -1,5 +1,6 @@
 //! Module containing integer aritimetic methods.
 
+use crate::fmt;
 use crate::intrinsics;
 use crate::u256;
 use std::mem::{self, MaybeUninit};
@@ -30,15 +31,13 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::from_str_radix("A", 16), Ok(u256::new(10)));
     /// ```
     #[inline]
     pub fn from_str_radix(src: &str, radix: u32) -> Result<Self, ParseIntError> {
-        let _ = (src, radix);
-        // from_str_radix(src, radix)
-        todo!()
+        fmt::from_str_radix(src, radix)
     }
 
     /// Returns the number of ones in the binary representation of `self`.

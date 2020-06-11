@@ -8,6 +8,7 @@
 
 mod cmp;
 mod convert;
+mod fmt;
 pub mod intrinsics;
 mod iter;
 mod ops;
@@ -17,7 +18,7 @@ pub use self::convert::AsU256;
 
 /// A 256-bit unsigned integer type.
 #[allow(non_camel_case_types)]
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq)]
+#[derive(Clone, Copy, Default, Eq, Hash, Ord, PartialEq)]
 #[repr(transparent)]
 pub struct u256(pub [u128; 2]);
 
@@ -116,18 +117,3 @@ impl u256 {
         }
     }
 }
-
-// TODO(nlordell):
-//
-// # Trait Implementations
-//
-// - Debug
-// - Display
-// - FromStr
-//
-// - Binary
-// - LowerExp
-// - LowerHex
-// - Octal
-// - UpperExp
-// - UpperHex
