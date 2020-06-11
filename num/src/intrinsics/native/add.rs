@@ -1,4 +1,4 @@
-/// Module implementing addition intrinsics.
+//! Module implementing addition intrinsics.
 
 use crate::u256;
 use std::mem::MaybeUninit;

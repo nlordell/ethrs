@@ -1,4 +1,4 @@
-/// Module implementing subtraction intrinsics.
+//! Module implementing subtraction intrinsics.
 
 use crate::u256;
 use std::mem::MaybeUninit;
