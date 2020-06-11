@@ -1,4 +1,6 @@
-//! This module contains intrinsics used by the `u256` implementation.
+//! This module contains intrinsics used by the [`u256`] implementation.
+//!
+//! [`u256`]: struct.u256.html
 
 #![allow(missing_docs)]
 

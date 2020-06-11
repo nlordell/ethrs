@@ -1,4 +1,4 @@
-//! Module containing macros for implementing [`std::ops`] traits.
+//! Module containing macros for implementing `std::ops` traits.
 
 use crate::intrinsics::*;
 use crate::u256;

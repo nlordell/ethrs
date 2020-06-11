@@ -37,16 +37,32 @@ impl_try_from! {
     isize, usize,
 }
 
-/// This trait defines `as` conversions from primitive types to [`u256`].
+/// This trait defines `as` conversions (casting) from primitive types to
+/// [`u256`].
 ///
-/// Note that `as` conversions typically sign extend in Rust, specifically:
+/// [`u256`]: struct.u256.html
+///
+/// # Examples
+///
+/// Note that in Rust casting from a negative signed integer sign to a larger
+/// unsigned interger sign extends. Additionally casting a floating point value
+/// to an integer is a saturating operation, with `NaN` converting to `0`. So:
+///
 /// ```
 /// # use ethrs_num::{u256, AsU256};
 /// assert_eq!((-1i32).as_u256(), u256::MAX);
-/// assert_eq!(u32::MAX.as_u256(), (u256::ONE << 32) - 1u128);
+/// assert_eq!(u32::MAX.as_u256(), 0xffffffff);
+///
+/// assert_eq!(f64::NEG_INFINITY.as_u256(), 0);
+/// assert_eq!((-1.0f64).as_u256(), 0);
+/// assert_eq!(f64::INFINITY.as_u256(), u256::MAX);
+/// assert_eq!(2.0f64.powi(257).as_u256(), u256::MAX);
+/// assert_eq!(f64::NAN.as_u256(), 0);
 /// ```
 pub trait AsU256 {
-    /// Perform an `as` conversion to a `[ethrs_num::u256]`.
+    /// Perform an `as` conversion to a [`u256`].
+    ///
+    /// [`u256`]: struct.u256.html
     fn as_u256(self) -> u256;
 }
 

@@ -28,4 +28,4 @@ impl<'a> Product<&'a u256> for u256 {
     }
 }
 
-// TODO(nlordell): Implement [`std::iter::Step`] once it stabilizes.
+// TODO(nlordell): Implement `std::iter::Step` once it stabilizes.
