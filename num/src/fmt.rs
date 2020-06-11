@@ -265,10 +265,10 @@ fn fmt_exp(mut n: u256, upper: bool, f: &mut fmt::Formatter<'_>) -> fmt::Result 
         (n, exponent, trailing_zeros, added_precision)
     };
 
-    // 39 digits (worst case u128) + . = 40
+    // 79 digits (worst case u256) + . = 80
     // Since `curr` always decreases by the number of digits copied, this means
     // that `curr >= 0`.
-    let mut buf = [MaybeUninit::<u8>::uninit(); 40];
+    let mut buf = [MaybeUninit::<u8>::uninit(); 80];
     let mut curr = buf.len() as isize; //index for buf
     let buf_ptr = &mut buf[0] as *mut _ as *mut u8;
     let lut_ptr = DEC_DIGITS_LUT.as_ptr();
@@ -405,7 +405,10 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn exp() {
-        assert_eq!(format!("{:E}", u256::new(42)), "4.2E1");
+        assert_eq!(format!("{:e}", u256::new(42)), "4.2e1");
+        assert_eq!(format!("{:e}", u256::new(10).pow(77)), "1E77");
+        assert_eq!(format!("{:E}", u256::new(10).pow(39) * 1337), "1.337E42");
     }
 }
