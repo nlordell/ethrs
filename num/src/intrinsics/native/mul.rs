@@ -10,8 +10,8 @@
 use crate::u256;
 use std::mem::MaybeUninit;
 
-#[inline(always)]
-fn mulddi3(a: &u128, b: &u128) -> u256 {
+#[inline]
+pub fn mulddi3(a: &u128, b: &u128) -> u256 {
     let mut high;
     let mut low;
 
@@ -35,24 +35,25 @@ fn mulddi3(a: &u128, b: &u128) -> u256 {
 }
 
 #[inline]
-pub fn multi3(res: &mut MaybeUninit<u256>, a: &u256, b: &u256) {
+pub fn mul3(res: &mut MaybeUninit<u256>, a: &u256, b: &u256) {
     let mut r = mulddi3(a.low(), b.low());
 
     let hi_lo = a.high().wrapping_mul(*b.low());
     let lo_hi = a.low().wrapping_mul(*b.high());
-    *r.high_mut() += hi_lo.wrapping_add(lo_hi);
+    *r.high_mut() = r.high().wrapping_add(hi_lo.wrapping_add(lo_hi));
 
     unsafe {
         res.as_mut_ptr().write(r);
     }
 }
 
+#[inline]
 pub fn mul2(r: &mut u256, a: &u256) {
     let (a, b) = (*r, a);
     // SAFETY: `multi3` does not write `MaybeUninit::uninit()` to `res` and
     // `u256` does not implement `Drop`.
     let res = unsafe { &mut *(r as *mut u256).cast() };
-    multi3(res, &a, b);
+    mul3(res, &a, b);
 }
 
 #[inline]
@@ -61,11 +62,40 @@ pub fn mulc(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) -> bool {
 
     let (hi_lo, overflow_hi_lo) = a.high().overflowing_mul(*b.low());
     let (lo_hi, overflow_lo_hi) = a.low().overflowing_mul(*b.high());
-    let (high, overflow_high) = hi_lo.overflowing_add(lo_hi);
-    *res.high_mut() += high;
+    let (hi, overflow_hi) = hi_lo.overflowing_add(lo_hi);
+    let (high, overflow_high) = res.high().overflowing_add(hi);
+    *res.high_mut() = high;
 
     unsafe {
         r.as_mut_ptr().write(res);
     }
-    overflow_hi_lo | overflow_lo_hi | overflow_high
+    overflow_hi_lo | overflow_lo_hi | overflow_hi | overflow_high
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::AsU256;
+
+    fn mul(a: impl AsU256, b: impl AsU256) -> (u256, bool) {
+        let mut r = MaybeUninit::uninit();
+        let overflow = mulc(&mut r, &a.as_u256(), &b.as_u256());
+        (unsafe { r.assume_init() }, overflow)
+    }
+
+    #[test]
+    fn multiplication() {
+        assert_eq!(mul(6, 7), (42.as_u256(), false));
+
+        assert_eq!(mul(u256::MAX, 1), (u256::MAX, false));
+        assert_eq!(mul(1, u256::MAX), (u256::MAX, false));
+        assert_eq!(mul(u256::MAX, 0), (u256::ZERO, false));
+        assert_eq!(mul(0, u256::MAX), (u256::ZERO, false));
+
+        assert_eq!(mul(u256::MAX, 5), (u256::MAX ^ 4, true));
+        assert_eq!(
+            mul(u128::MAX, u128::MAX),
+            (u256::from_words(!0 << 1, 1), false),
+        );
+    }
 }

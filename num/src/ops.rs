@@ -105,10 +105,9 @@ impl std::ops::Div for &'_ u256 {
             panic!("attempt to divide by zero");
         }
 
-        todo!()
-        // let mut result = MaybeUninit::uninit();
-        // div3(&mut result, self, rhs);
-        // unsafe { result.assume_init() }
+        let mut result = MaybeUninit::uninit();
+        div3(&mut result, self, rhs);
+        unsafe { result.assume_init() }
     }
 }
 
@@ -123,10 +122,9 @@ impl std::ops::Rem for &'_ u256 {
             panic!("attempt to calculate the remainder with a divisor of zero");
         }
 
-        todo!()
-        // let mut result = MaybeUninit::uninit();
-        // rem3(&mut result, self, rhs);
-        // unsafe { result.assume_init() }
+        let mut result = MaybeUninit::uninit();
+        rem3(&mut result, self, rhs);
+        unsafe { result.assume_init() }
     }
 }
 

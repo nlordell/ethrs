@@ -448,7 +448,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(128).checked_div(u256::new(2)), Some(u256::new(64)));
     /// assert_eq!(u256::new(1).checked_div(u256::new(0)), None);
@@ -471,7 +471,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(128).checked_div_euclid(u256::new(2)), Some(u256::new(64)));
     /// assert_eq!(u256::new(1).checked_div_euclid(u256::new(0)), None);
@@ -494,7 +494,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(5).checked_rem(u256::new(2)), Some(u256::new(1)));
     /// assert_eq!(u256::new(5).checked_rem(u256::new(0)), None);
@@ -517,7 +517,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(5).checked_rem_euclid(u256::new(2)), Some(u256::new(1)));
     /// assert_eq!(u256::new(5).checked_rem_euclid(u256::new(0)), None);
@@ -611,7 +611,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(2).checked_pow(5), Some(u256::new(32)));
     /// assert_eq!(u256::MAX.checked_pow(2), None);
@@ -619,29 +619,26 @@ impl u256 {
     #[must_use = "this returns the result of the operation, \
                   without modifying the original"]
     #[inline]
-    pub fn checked_pow(self, mut _exp: u32) -> Option<Self> {
-        /*
+    pub fn checked_pow(self, mut exp: u32) -> Option<Self> {
         let mut base = self;
-        let mut acc: Self = 1;
+        let mut acc = u256::ONE;
 
         while exp > 1 {
             if (exp & 1) == 1 {
-                acc = try_opt!(acc.checked_mul(base));
+                acc = acc.checked_mul(base)?;
             }
             exp /= 2;
-            base = try_opt!(base.checked_mul(base));
+            base = base.checked_mul(base)?;
         }
 
         // Deal with the final bit of the exponent separately, since
         // squaring the base afterwards is not necessary and may cause a
         // needless overflow.
         if exp == 1 {
-            acc = try_opt!(acc.checked_mul(base));
+            acc = acc.checked_mul(base)?;
         }
 
         Some(acc)
-        */
-        todo!()
     }
 
     /// Saturating integer addition. Computes `self + rhs`, saturating at the
@@ -712,7 +709,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(4).saturating_pow(3), u256::new(64));
     /// assert_eq!(u256::MAX.saturating_pow(2), u256::MAX);
@@ -802,7 +799,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(100).wrapping_div(u256::new(10)), u256::new(10));
     /// ```
@@ -824,7 +821,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(100).wrapping_div_euclid(u256::new(10)), u256::new(10));
     /// ```
@@ -844,7 +841,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(100).wrapping_rem(u256::new(10)), u256::new(0));
     /// ```
@@ -866,7 +863,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(100).wrapping_rem_euclid(u256::new(10)), u256::new(0));
     /// ```
@@ -974,18 +971,23 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(3).wrapping_pow(5), u256::new(243));
-    /// assert_eq!(u256::new(3).wrapping_pow(6), u256::new(217));
+    /// assert_eq!(
+    ///     u256::new(1337).wrapping_pow(42),
+    ///     u256::from_words(
+    ///         45367329835866155830012179193722278514,
+    ///         159264946433345088039815329994094210673,
+    ///     ),
+    /// );
     /// ```
     #[must_use = "this returns the result of the operation, \
                   without modifying the original"]
     #[inline]
-    pub fn wrapping_pow(self, mut _exp: u32) -> Self {
-        /*
+    pub fn wrapping_pow(self, mut exp: u32) -> Self {
         let mut base = self;
-        let mut acc: Self = 1;
+        let mut acc = u256::ONE;
 
         while exp > 1 {
             if (exp & 1) == 1 {
@@ -1003,8 +1005,6 @@ impl u256 {
         }
 
         acc
-        */
-        todo!()
     }
 
     /// Calculates `self` + `rhs`
@@ -1099,7 +1099,7 @@ impl u256 {
     ///
     /// Basic usage
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(5).overflowing_div(u256::new(2)), (u256::new(2), false));
     /// ```
@@ -1126,7 +1126,7 @@ impl u256 {
     ///
     /// Basic usage
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(5).overflowing_div_euclid(u256::new(2)), (u256::new(2), false));
     /// ```
@@ -1152,7 +1152,7 @@ impl u256 {
     ///
     /// Basic usage
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(5).overflowing_rem(u256::new(2)), (u256::new(1), false));
     /// ```
@@ -1181,7 +1181,7 @@ impl u256 {
     ///
     /// Basic usage
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(5).overflowing_rem_euclid(u256::new(2)), (u256::new(1), false));
     /// ```
@@ -1270,18 +1270,26 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(3).overflowing_pow(5), (u256::new(243), false));
-    /// assert_eq!(u256::new(3).overflowing_pow(6), (u256::new(217), true));
+    /// assert_eq!(
+    ///     u256::new(1337).overflowing_pow(42),
+    ///     (
+    ///         u256::from_words(
+    ///             45367329835866155830012179193722278514,
+    ///             159264946433345088039815329994094210673,
+    ///         ),
+    ///         true,
+    ///     )
+    /// );
     /// ```
     #[must_use = "this returns the result of the operation, \
                   without modifying the original"]
     #[inline]
-    pub fn overflowing_pow(self, mut _exp: u32) -> (Self, bool) {
-        /*
+    pub fn overflowing_pow(self, mut exp: u32) -> (Self, bool) {
         let mut base = self;
-        let mut acc: Self = 1;
+        let mut acc = u256::ONE;
         let mut overflown = false;
         // Scratch space for storing results of overflowing_mul.
         let mut r;
@@ -1308,8 +1316,6 @@ impl u256 {
         }
 
         (acc, overflown)
-        */
-        todo!()
     }
 
     /// Raises self to the power of `exp`, using exponentiation by squaring.
@@ -1318,21 +1324,20 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(2).pow(5), u256::new(32));
     /// ```
     #[must_use = "this returns the result of the operation, \
                   without modifying the original"]
     #[inline]
-    pub fn pow(self, mut _exp: u32) -> Self {
-        /*
+    pub fn pow(self, mut exp: u32) -> Self {
         let mut base = self;
-        let mut acc = 1;
+        let mut acc = u256::ONE;
 
         while exp > 1 {
             if (exp & 1) == 1 {
-                acc = acc * base;
+                acc *= base;
             }
             exp /= 2;
             base = base * base;
@@ -1342,12 +1347,10 @@ impl u256 {
         // squaring the base afterwards is not necessary and may cause a
         // needless overflow.
         if exp == 1 {
-            acc = acc * base;
+            acc *= base;
         }
 
         acc
-        */
-        todo!()
     }
 
     /// Performs Euclidean division.
@@ -1363,7 +1366,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(7).div_euclid(u256::new(4)), u256::new(1));
     /// ```
@@ -1387,7 +1390,7 @@ impl u256 {
     ///
     /// Basic usage:
     ///
-    /// ```should_panic
+    /// ```
     /// # use ethrs_num::u256;
     /// assert_eq!(u256::new(7).rem_euclid(u256::new(4)), u256::new(3));
     /// ```

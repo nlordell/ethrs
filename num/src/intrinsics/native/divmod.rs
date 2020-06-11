@@ -8,11 +8,11 @@
 //! This source is ported from LLVM project from C:
 //! https://github.com/llvm/llvm-project/blob/master/compiler-rt/lib/builtins/udivmodti4.c
 
-use crate::u256;
+use crate::{u256, AsU256};
 use std::mem::MaybeUninit;
 
-#[allow(warnings)]
-pub fn udivmodti4(
+#[allow(clippy::many_single_char_names)]
+pub fn udivmod4(
     res: &mut MaybeUninit<u256>,
     a: &u256,
     b: &u256,
@@ -24,13 +24,13 @@ pub fn udivmodti4(
         };
     }
 
-    const n_udword_bits: u32 = 128;
-    const n_utword_bits: u32 = 256;
+    const N_UDWORD_BITS: u32 = 128;
+    const N_UTWORD_BITS: u32 = 256;
     let n = a;
     let d = b;
     let mut q = MaybeUninit::<u256>::uninit();
     let mut r = MaybeUninit::<u256>::uninit();
-    let mut sr;
+    let mut sr: u32;
     // special cases, X is unknown, K != 0
     if *n.high() == 0 {
         if *d.high() == 0 {
@@ -78,11 +78,11 @@ pub fn udivmodti4(
         // K K
         // ---
         // K 0
-        if (d.high() & (d.high() - 1)) == 0
-        /* if d is a power of 2 */
-        {
+        // NOTE: Modified from `if (d.high() & (d.high() - 1)) == 0`
+        if d.high().is_power_of_two() {
+            /* if d is a power of 2 */
             if let Some(rem) = rem {
-                set!(rem = u256::from_words(*n.low(), n.high() & (d.high() - 1)));
+                set!(rem = u256::from_words(n.high() & (d.high() - 1), *n.low()));
             }
             set!(res = u256::new(n.high() >> d.high().trailing_zeros()));
             return;
@@ -90,9 +90,12 @@ pub fn udivmodti4(
         // K K
         // ---
         // K 0
-        sr = d.high().leading_zeros() - n.high().leading_zeros();
-        // 0 <= sr <= n_udword_bits - 2 or sr large
-        if sr > n_udword_bits - 2 {
+        sr = d
+            .high()
+            .leading_zeros()
+            .wrapping_sub(n.high().leading_zeros());
+        // 0 <= sr <= N_UDWORD_BITS - 2 or sr large
+        if sr > N_UDWORD_BITS - 2 {
             if let Some(rem) = rem {
                 set!(rem = *n);
             }
@@ -100,14 +103,14 @@ pub fn udivmodti4(
             return;
         }
         sr += 1;
-        // 1 <= sr <= n_udword_bits - 1
-        // q.all = n.all << (n_utword_bits - sr);
-        set!(q = u256::from_words(n.low() << (n_udword_bits - sr), 0));
+        // 1 <= sr <= N_UDWORD_BITS - 1
+        // q.all = n.all << (N_UTWORD_BITS - sr);
+        set!(q = u256::from_words(n.low() << (N_UDWORD_BITS - sr), 0));
         // r.all = n.all >> sr;
         set!(
             r = u256::from_words(
                 n.high() >> sr,
-                (n.high() << (n_udword_bits - sr)) | (n.low() >> sr),
+                (n.high() << (N_UDWORD_BITS - sr)) | (n.low() >> sr),
             )
         );
     } else {
@@ -116,7 +119,8 @@ pub fn udivmodti4(
             // K X
             // ---
             // 0 K
-            if (d.low() & (d.low() - 1)) == 0 {
+            // NOTE: Modified from `if (d.low() & (d.low() - 1)) == 0`.
+            if d.low().is_power_of_two() {
                 /* if d is a power of 2 */
                 if let Some(rem) = rem {
                     set!(rem = u256::new(n.low() & (d.low() - 1)));
@@ -129,7 +133,7 @@ pub fn udivmodti4(
                 set!(
                     res = u256::from_words(
                         n.high() >> sr,
-                        (n.high() << (n_udword_bits - sr)) | (n.low() >> sr),
+                        (n.high() << (N_UDWORD_BITS - sr)) | (n.low() >> sr),
                     )
                 );
                 return;
@@ -137,39 +141,42 @@ pub fn udivmodti4(
             // K X
             // ---
             // 0 K
-            sr = 1 + n_udword_bits + d.low().leading_zeros() - (n.high()).leading_zeros();
-            // 2 <= sr <= n_utword_bits - 1
-            // q.all = n.all << (n_utword_bits - sr);
+            sr = 1 + N_UDWORD_BITS + d.low().leading_zeros() - (n.high()).leading_zeros();
+            // 2 <= sr <= N_UTWORD_BITS - 1
+            // q.all = n.all << (N_UTWORD_BITS - sr);
             // r.all = n.all >> sr;
-            if sr == n_udword_bits {
+            #[allow(clippy::comparison_chain)]
+            if sr == N_UDWORD_BITS {
                 set!(q = u256::from_words(*n.low(), 0));
                 set!(r = u256::from_words(0, *n.high()));
-            } else if sr < n_udword_bits {
-                /* 2 <= sr <= n_udword_bits - 1 */
-                set!(q = u256::from_words(n.low() << (n_udword_bits - sr), 0));
+            } else if sr < N_UDWORD_BITS {
+                /* 2 <= sr <= N_UDWORD_BITS - 1 */
+                set!(q = u256::from_words(n.low() << (N_UDWORD_BITS - sr), 0));
                 set!(
                     r = u256::from_words(
                         n.high() >> sr,
-                        (n.high() << (n_udword_bits - sr)) | (n.low() >> sr),
+                        (n.high() << (N_UDWORD_BITS - sr)) | (n.low() >> sr),
                     )
                 );
             } else {
-                /* n_udword_bits + 1 <= sr <= n_utword_bits - 1 */
+                /* N_UDWORD_BITS + 1 <= sr <= N_UTWORD_BITS - 1 */
                 set!(
                     q = u256::from_words(
-                        (n.high() << (n_utword_bits - sr)) | (n.low() >> (sr - n_udword_bits)),
-                        n.low() << (n_utword_bits - sr),
+                        (n.high() << (N_UTWORD_BITS - sr)) | (n.low() >> (sr - N_UDWORD_BITS)),
+                        n.low() << (N_UTWORD_BITS - sr),
                     )
                 );
-                set!(r = u256::from_words(0, n.high() >> (sr - n_udword_bits)));
+                set!(r = u256::from_words(0, n.high() >> (sr - N_UDWORD_BITS)));
             }
         } else {
             // K X
             // ---
             // K K
-            sr = (d.high()).leading_zeros() - (n.high()).leading_zeros();
-            // 0 <= sr <= n_udword_bits - 1 or sr large
-            if sr > n_udword_bits - 1 {
+            sr = (d.high())
+                .leading_zeros()
+                .wrapping_sub((n.high()).leading_zeros());
+            // 0 <= sr <= N_UDWORD_BITS - 1 or sr large
+            if sr > N_UDWORD_BITS - 1 {
                 if let Some(rem) = rem {
                     set!(rem = *n);
                 }
@@ -177,78 +184,215 @@ pub fn udivmodti4(
                 return;
             }
             sr += 1;
-            // 1 <= sr <= n_udword_bits
-            // q.all = n.all << (n_utword_bits - sr);
+            // 1 <= sr <= N_UDWORD_BITS
+            // q.all = n.all << (N_UTWORD_BITS - sr);
             // r.all = n.all >> sr;
-            if sr == n_udword_bits {
+            if sr == N_UDWORD_BITS {
                 set!(q = u256::from_words(*n.low(), 0));
                 set!(r = u256::from_words(0, *n.high()));
             } else {
                 set!(
                     r = u256::from_words(
                         n.high() >> sr,
-                        (n.high() << (n_udword_bits - sr)) | (n.low() >> sr),
+                        (n.high() << (N_UDWORD_BITS - sr)) | (n.low() >> sr),
                     )
                 );
-                set!(q = u256::from_words(n.low() << (n_udword_bits - sr), 0));
+                set!(q = u256::from_words(n.low() << (N_UDWORD_BITS - sr), 0));
             }
         }
     }
     // Not a special case
     // q and r are initialized with:
-    // q.all = n.all << (n_utword_bits - sr);
+    // q.all = n.all << (N_UTWORD_BITS - sr);
     // r.all = n.all >> sr;
-    // 1 <= sr <= n_utword_bits - 1
-    let mut carry = 0u32;
+    // 1 <= sr <= N_UTWORD_BITS - 1
+    let mut carry = 0u128;
     let mut q = unsafe { q.assume_init() };
     let mut r = unsafe { r.assume_init() };
     while sr > 0 {
         // r:q = ((r:q)  << 1) | carry
-        *r.high_mut() = (r.high() << 1) | (r.low() >> (n_udword_bits - 1));
-        *r.low_mut() = (r.low() << 1) | (q.high() >> (n_udword_bits - 1));
-        *q.high_mut() = (q.high() << 1) | (q.low() >> (n_udword_bits - 1));
-        *q.low_mut() = (q.low() << 1) | (carry as u128);
+        *r.high_mut() = (r.high() << 1) | (r.low() >> (N_UDWORD_BITS - 1));
+        *r.low_mut() = (r.low() << 1) | (q.high() >> (N_UDWORD_BITS - 1));
+        *q.high_mut() = (q.high() << 1) | (q.low() >> (N_UDWORD_BITS - 1));
+        *q.low_mut() = (q.low() << 1) | carry;
         // carry = 0;
         // if (r.all >= d.all)
         // {
         //     r.all -= d.all;
         //      carry = 1;
         // }
-        let s: u256 = (d - r - 1) >> (n_utword_bits - 1);
-        carry = (*s.low() as u32) & 1;
+        // NOTE: Modified from `(d - r - 1) >> (N_UTWORD_BITS - 1)` to be an
+        // **arithmetic** shift.
+        let s = {
+            let (hi, _) = d.wrapping_sub(r).wrapping_sub(u256::ONE).into_words();
+            ((hi as i128) >> 127).as_u256()
+        };
+        carry = s.low() & 1;
         r -= d & s;
+
         sr -= 1;
     }
-    q = (q << 1) | u256::from(carry);
+    q = (q << 1) | u256::new(carry);
     if let Some(rem) = rem {
         set!(rem = r);
     }
     set!(res = q);
-    return;
 }
 
 pub fn div2(r: &mut u256, a: &u256) {
     let (a, b) = (*r, a);
-    // SAFETY: `udivmodti4` does not write `MaybeUninit::uninit()` to `res` and
+    // SAFETY: `udivmod4` does not write `MaybeUninit::uninit()` to `res` and
     // `u256` does not implement `Drop`.
     let res = unsafe { &mut *(r as *mut u256).cast() };
-    udivmodti4(res, &a, b, None);
+    udivmod4(res, &a, b, None);
 }
 
 pub fn div3(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) {
-    udivmodti4(r, a, b, None);
+    udivmod4(r, a, b, None);
 }
 
 pub fn rem2(r: &mut u256, a: &u256) {
     let mut res = MaybeUninit::uninit();
     let (a, b) = (*r, a);
-    // SAFETY: `udivmodti4` does not write `MaybeUninit::uninit()` to `rem` and
+    // SAFETY: `udivmod4` does not write `MaybeUninit::uninit()` to `rem` and
     // `u256` does not implement `Drop`.
     let r = unsafe { &mut *(r as *mut u256).cast() };
-    udivmodti4(&mut res, &a, b, Some(r));
+    udivmod4(&mut res, &a, b, Some(r));
 }
 
 pub fn rem3(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) {
     let mut res = MaybeUninit::uninit();
-    udivmodti4(&mut res, &a, b, Some(r));
+    udivmod4(&mut res, &a, b, Some(r));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn div(a: impl AsU256, b: impl AsU256) -> u256 {
+        let mut r = MaybeUninit::uninit();
+        div3(&mut r, &a.as_u256(), &b.as_u256());
+        unsafe { r.assume_init() }
+    }
+
+    fn rem(a: impl AsU256, b: impl AsU256) -> u256 {
+        let mut r = MaybeUninit::uninit();
+        rem3(&mut r, &a.as_u256(), &b.as_u256());
+        unsafe { r.assume_init() }
+    }
+
+    #[test]
+    fn division() {
+        // 0 X
+        // ---
+        // 0 X
+        assert_eq!(div(100, 9), 11);
+
+        // 0 X
+        // ---
+        // K X
+        assert_eq!(div(!0u128, u256::ONE << 128u32), 0);
+
+        // K 0
+        // ---
+        // K 0
+        assert_eq!(div(u256::from_words(100, 0), u256::from_words(10, 0)), 10);
+
+        // K K
+        // ---
+        // K 0
+        assert_eq!(div(u256::from_words(100, 1337), u256::ONE << 130u32), 25);
+        assert_eq!(div(u256::from_words(1337, !0), u256::from_words(63, 0)), 21);
+
+        // K X
+        // ---
+        // 0 K
+        assert_eq!(
+            div(u256::from_words(42, 0), u256::ONE),
+            u256::from_words(42, 0),
+        );
+        assert_eq!(
+            div(u256::from_words(42, 42), u256::ONE << 42),
+            42u128 << (128 - 42),
+        );
+        assert_eq!(
+            div(u256::from_words(1337, !0), 0xc0ffee),
+            35996389033280467545299711090127855,
+        );
+        assert_eq!(
+            div(u256::from_words(42, 0), 99),
+            144362216269489045105674075880144089708,
+        );
+
+        // K X
+        // ---
+        // K K
+        assert_eq!(
+            div(u256::from_words(100, 100), u256::from_words(1000, 1000)),
+            0,
+        );
+        assert_eq!(
+            div(u256::from_words(1337, !0), u256::from_words(43, !0)),
+            30,
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn division_by_zero() {
+        div(1, 0);
+    }
+
+    #[test]
+    fn remainder() {
+        // 0 X
+        // ---
+        // 0 X
+        assert_eq!(rem(100, 9), 1);
+
+        // 0 X
+        // ---
+        // K X
+        assert_eq!(rem(!0u128, u256::ONE << 128u32), !0u128);
+
+        // K 0
+        // ---
+        // K 0
+        assert_eq!(rem(u256::from_words(100, 0), u256::from_words(10, 0)), 0);
+
+        // K K
+        // ---
+        // K 0
+        assert_eq!(rem(u256::from_words(100, 1337), u256::ONE << 130u32), 1337);
+        assert_eq!(
+            rem(u256::from_words(1337, !0), u256::from_words(63, 0)),
+            u256::from_words(14, !0),
+        );
+
+        // K X
+        // ---
+        // 0 K
+        assert_eq!(rem(u256::from_words(42, 0), u256::ONE), 0);
+        assert_eq!(rem(u256::from_words(42, 42), u256::ONE << 42), 42);
+        assert_eq!(rem(u256::from_words(1337, !0), 0xc0ffee), 1910477);
+        assert_eq!(rem(u256::from_words(42, 0), 99), 60);
+
+        // K X
+        // ---
+        // K K
+        assert_eq!(
+            rem(u256::from_words(100, 100), u256::from_words(1000, 1000)),
+            u256::from_words(100, 100),
+        );
+        assert_eq!(
+            rem(u256::from_words(1337, !0), u256::from_words(43, !0)),
+            u256::from_words(18, 29),
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn remainder_by_zero() {
+        rem(1, 0);
+    }
 }

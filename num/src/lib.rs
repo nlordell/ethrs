@@ -1,3 +1,11 @@
+//! This crate implements a 256-bit unsigned integer type.
+//!
+//! The implementation tries to follow as closely as possible to primitive
+//! integer types, and should implement all the common methods and traits as the
+//! primitive integer types.
+
+#![deny(missing_docs)]
+
 mod cmp;
 mod convert;
 pub mod intrinsics;
@@ -7,6 +15,7 @@ mod uint;
 
 pub use self::convert::AsU256;
 
+/// A 256-bit unsigned integer type.
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq)]
 #[repr(transparent)]

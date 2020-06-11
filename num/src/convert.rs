@@ -38,7 +38,15 @@ impl_try_from! {
 }
 
 /// This trait defines `as` conversions from primitive types to [`u256`].
+///
+/// Note that `as` conversions typically sign extend in Rust, specifically:
+/// ```
+/// # use ethrs_num::{u256, AsU256};
+/// assert_eq!((-1i32).as_u256(), u256::MAX);
+/// assert_eq!(u32::MAX.as_u256(), (u256::ONE << 32) - 1u128);
+/// ```
 pub trait AsU256 {
+    /// Perform an `as` conversion to a `[ethrs_num::u256]`.
     fn as_u256(self) -> u256;
 }
 

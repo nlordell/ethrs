@@ -1,5 +1,7 @@
 //! This module contains intrinsics used by the `u256` implementation.
 
+#![allow(missing_docs)]
+
 #[cfg(generate_intrinsics)]
 mod llvm;
 #[cfg(not(generate_intrinsics))]
