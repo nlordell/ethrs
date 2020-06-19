@@ -17,22 +17,25 @@ mod uint;
 pub use self::convert::AsU256;
 
 /// A 256-bit unsigned integer type.
-#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, Default, Eq, Hash, Ord, PartialEq)]
 #[repr(transparent)]
-pub struct u256(pub [u128; 2]);
+pub struct U256(pub [u128; 2]);
 
-impl u256 {
+/// A 256-bit unsigned integer type.
+#[allow(non_camel_case_types)]
+pub type u256 = U256;
+
+impl U256 {
     /// The additive identity for this integer type, i.e. `0`.
-    pub const ZERO: Self = u256([0; 2]);
+    pub const ZERO: Self = U256([0; 2]);
 
     /// The multiplicative identity for this integer type, i.e. `1`.
-    pub const ONE: Self = u256::new(1);
+    pub const ONE: Self = U256::new(1);
 
     /// Creates a new 256-bit integer value from a primitive `u128` integer.
     #[inline]
     pub const fn new(value: u128) -> Self {
-        u256::from_words(0, value)
+        U256::from_words(0, value)
     }
 
     /// Creates a new 256-bit integer value from high and low words.
@@ -40,11 +43,11 @@ impl u256 {
     pub const fn from_words(hi: u128, lo: u128) -> Self {
         #[cfg(target_endian = "little")]
         {
-            u256([lo, hi])
+            U256([lo, hi])
         }
         #[cfg(target_endian = "big")]
         {
-            u256([hi, lo])
+            U256([hi, lo])
         }
     }
 
@@ -53,12 +56,12 @@ impl u256 {
     pub const fn into_words(self) -> (u128, u128) {
         #[cfg(target_endian = "little")]
         {
-            let u256([lo, hi]) = self;
+            let U256([lo, hi]) = self;
             (hi, lo)
         }
         #[cfg(target_endian = "big")]
         {
-            let u256([hi, lo]) = self;
+            let U256([hi, lo]) = self;
             (hi, lo)
         }
     }
@@ -114,6 +117,122 @@ impl u256 {
         #[cfg(target_endian = "big")]
         {
             &mut self.0[0]
+        }
+    }
+
+    /// Cast to a primitive `i8`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub const fn as_i8(self) -> i8 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Cast to a primitive `i16`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub const fn as_i16(self) -> i16 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Cast to a primitive `i32`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub const fn as_i32(self) -> i32 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Cast to a primitive `i64`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub const fn as_i64(self) -> i64 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Cast to a primitive `i128`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub const fn as_i128(self) -> i128 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Cast to a primitive `u8`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub const fn as_u8(self) -> u8 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Cast to a primitive `u16`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub const fn as_u16(self) -> u16 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Cast to a primitive `u32`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub const fn as_u32(self) -> u32 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Cast to a primitive `u64`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub const fn as_u64(self) -> u64 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Cast to a primitive `u128`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub const fn as_u128(self) -> u128 {
+        let (_, lo) = self.into_words();
+        lo
+    }
+
+    /// Cast to a primitive `isize`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub const fn as_isize(self) -> isize {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Cast to a primitive `usize`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub const fn as_usize(self) -> usize {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Cast to a primitive `f32`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub fn as_f32(self) -> f32 {
+        match self.into_words() {
+            (0, lo) => lo as _,
+            _ => f32::INFINITY,
+        }
+    }
+
+    /// Cast to a primitive `f64`.
+    ///
+    /// [`U256`]: struct.U256.html
+    pub fn as_f64(self) -> f64 {
+        match self.into_words() {
+            (0, lo) => lo as _,
+            (hi, lo) => (hi as f64) * (2.0f64).powi(128) + (lo as f64),
         }
     }
 }

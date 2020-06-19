@@ -1,7 +1,7 @@
 //! Module containing macros for implementing `std::ops` traits.
 
 use crate::intrinsics::*;
-use crate::u256;
+use crate::U256;
 use std::mem::MaybeUninit;
 
 macro_rules! impl_binops {
@@ -12,11 +12,11 @@ macro_rules! impl_binops {
             $overflow:path; $msg:expr
         }
     )*) => {$(
-        impl std::ops::$op<&'_ u256> for &'_ u256 {
-            type Output = u256;
+        impl std::ops::$op<&'_ U256> for &'_ U256 {
+            type Output = U256;
 
             #[inline]
-            fn $method(self, rhs: &'_ u256) -> Self::Output {
+            fn $method(self, rhs: &'_ U256) -> Self::Output {
                 binop!($wrap, $overflow [ self, rhs ] $msg)
             }
         }
@@ -46,15 +46,15 @@ macro_rules! binop {
 macro_rules! impl_auto_binop {
     ($op:ident { $method:ident }) => {
         impl_ref_binop! {
-            $op <&u256 ; &u256>::$method (rhs) {
-                <u256> for &'_ u256 => { &rhs }
-                <&'_ u256> for u256 => { rhs }
-                <u256> for u256 => { &rhs }
+            $op <&U256 ; &U256>::$method (rhs) {
+                <U256> for &'_ U256 => { &rhs }
+                <&'_ U256> for U256 => { rhs }
+                <U256> for U256 => { &rhs }
             }
         }
 
         impl_ref_binop! {
-            $op <&u256 ; u256>::$method (rhs) { u128 } => { u256::new(rhs) }
+            $op <&U256 ; U256>::$method (rhs) { u128 } => { U256::new(rhs) }
         }
     };
 }
@@ -66,7 +66,7 @@ macro_rules! impl_ref_binop {
         )*}
     ) => {$(
         impl std::ops::$op<$rhs> for $lhs {
-            type Output = u256;
+            type Output = U256;
 
             #[inline]
             fn $method(self, $x: $rhs) -> Self::Output {
@@ -80,11 +80,11 @@ macro_rules! impl_ref_binop {
         } => $conv:block
     ) => {$(
         impl_ref_binop! {
-            $op <&u256 ; $tr>::$method (rhs) {
-                <&'_ $rhs> for &'_ u256 => { let $x = *rhs; $conv }
-                <&'_ $rhs> for u256 => { let $x = *rhs; $conv }
-                <$rhs> for &'_ u256 => { let $x = rhs; $conv }
-                <$rhs> for u256 => { let $x = rhs; $conv }
+            $op <&U256 ; $tr>::$method (rhs) {
+                <&'_ $rhs> for &'_ U256 => { let $x = *rhs; $conv }
+                <&'_ $rhs> for U256 => { let $x = *rhs; $conv }
+                <$rhs> for &'_ U256 => { let $x = rhs; $conv }
+                <$rhs> for U256 => { let $x = rhs; $conv }
             }
         }
     )*};
@@ -96,12 +96,12 @@ impl_binops! {
     Sub { sub => sub3, subc; "subtract with overflow" }
 }
 
-impl std::ops::Div for &'_ u256 {
-    type Output = u256;
+impl std::ops::Div for &'_ U256 {
+    type Output = U256;
 
     #[inline]
     fn div(self, rhs: Self) -> Self::Output {
-        if rhs == &u256::ZERO {
+        if rhs == &U256::ZERO {
             panic!("attempt to divide by zero");
         }
 
@@ -113,12 +113,12 @@ impl std::ops::Div for &'_ u256 {
 
 impl_auto_binop!(Div { div });
 
-impl std::ops::Rem for &'_ u256 {
-    type Output = u256;
+impl std::ops::Rem for &'_ U256 {
+    type Output = U256;
 
     #[inline]
     fn rem(self, rhs: Self) -> Self::Output {
-        if rhs == &u256::ZERO {
+        if rhs == &U256::ZERO {
             panic!("attempt to calculate the remainder with a divisor of zero");
         }
 
@@ -137,8 +137,8 @@ macro_rules! impl_shifts {
             $wrap:path; $msg:expr
         }
     )*) => {$(
-        impl std::ops::$op<u32> for &'_ u256 {
-            type Output = u256;
+        impl std::ops::$op<u32> for &'_ U256 {
+            type Output = U256;
 
             #[inline]
             fn $method(self, rhs: u32) -> Self::Output {
@@ -147,19 +147,19 @@ macro_rules! impl_shifts {
         }
 
         impl_ref_binop! {
-            $op <&u256 ; u32>::$method (rhs) {
-                <&'_ u32> for &'_ u256 => { *rhs }
-                <&'_ u32> for u256 => { *rhs }
-                <u32> for u256 => { rhs }
+            $op <&U256 ; u32>::$method (rhs) {
+                <&'_ u32> for &'_ U256 => { *rhs }
+                <&'_ u32> for U256 => { *rhs }
+                <u32> for U256 => { rhs }
             }
         }
 
         impl_ref_binop! {
-            $op <&u256 ; u32>::$method (rhs) { u256 } => { *rhs.low() as _ }
+            $op <&U256 ; u32>::$method (rhs) { U256 } => { *rhs.low() as _ }
         }
 
         impl_ref_binop! {
-            $op <&u256 ; u32>::$method (rhs) {
+            $op <&U256 ; u32>::$method (rhs) {
                 i8, i16, i32, i64, i128, isize,
                 u8, u16, u64, u128, usize,
             } => { rhs as _ }
@@ -186,23 +186,23 @@ impl_shifts! {
     Shr { shr => shr3; "shift right with overflow" }
 }
 
-impl std::ops::Not for u256 {
-    type Output = u256;
+impl std::ops::Not for U256 {
+    type Output = U256;
 
     #[inline]
     fn not(self) -> Self::Output {
-        let u256([a, b]) = self;
-        u256([!a, !b])
+        let U256([a, b]) = self;
+        U256([!a, !b])
     }
 }
 
-impl std::ops::Not for &'_ u256 {
-    type Output = u256;
+impl std::ops::Not for &'_ U256 {
+    type Output = U256;
 
     #[inline]
     fn not(self) -> Self::Output {
-        let u256([a, b]) = self;
-        u256([!a, !b])
+        let U256([a, b]) = self;
+        U256([!a, !b])
     }
 }
 
@@ -210,14 +210,14 @@ macro_rules! impl_bitwiseops {
     ($(
         $op:ident { $method:ident }
     )*) => {$(
-        impl std::ops::$op<&'_ u256> for &'_ u256 {
-            type Output = u256;
+        impl std::ops::$op<&'_ U256> for &'_ U256 {
+            type Output = U256;
 
             #[inline]
-            fn $method(self, rhs: &'_ u256) -> Self::Output {
-                let u256([a, b]) = self;
-                let u256([rhs_a, rhs_b]) = rhs;
-                u256([a.$method(rhs_a), b.$method(rhs_b)])
+            fn $method(self, rhs: &'_ U256) -> Self::Output {
+                let U256([a, b]) = self;
+                let U256([rhs_a, rhs_b]) = rhs;
+                U256([a.$method(rhs_a), b.$method(rhs_b)])
             }
         }
 
@@ -239,9 +239,9 @@ macro_rules! impl_binops_assign {
             $binop:tt
         }
     )*) => {$(
-        impl std::ops::$op<&'_ u256> for u256 {
+        impl std::ops::$op<&'_ U256> for U256 {
             #[inline]
-            fn $method(&mut self, rhs: &'_ u256) {
+            fn $method(&mut self, rhs: &'_ U256) {
                 binop_assign!($wrap, $binop [ self, rhs ])
             }
         }
@@ -266,13 +266,13 @@ macro_rules! binop_assign {
 macro_rules! impl_auto_binop_assign {
     ($op:ident { $method:ident }) => {
         impl_ref_binop_assign! {
-            $op <u256 ; &u256>::$method (rhs) {
-                <u256> for u256 => { &rhs }
+            $op <U256 ; &U256>::$method (rhs) {
+                <U256> for U256 => { &rhs }
             }
         }
 
         impl_ref_binop_assign! {
-            $op <u256 ; u256>::$method (rhs) { u128 } => { u256::new(rhs) }
+            $op <U256 ; U256>::$method (rhs) { u128 } => { U256::new(rhs) }
         }
     };
 }
@@ -280,10 +280,10 @@ macro_rules! impl_auto_binop_assign {
 macro_rules! impl_ref_binop_assign {
     (
         $op:ident <$ref:ty ; $tr:ty> :: $method:ident ($x:ident) {$(
-            <$rhs:ty> for u256 => $conv:block
+            <$rhs:ty> for U256 => $conv:block
         )*}
     ) => {$(
-        impl std::ops::$op<$rhs> for u256 {
+        impl std::ops::$op<$rhs> for U256 {
             #[inline]
             fn $method(&mut self, $x: $rhs) {
                 <$ref as std::ops::$op<$tr>>::$method(self, $conv)
@@ -296,9 +296,9 @@ macro_rules! impl_ref_binop_assign {
         } => $conv:block
     ) => {$(
         impl_ref_binop_assign! {
-            $op <u256 ; $tr>::$method (rhs) {
-                <&'_ $rhs> for u256 => { let $x = *rhs; $conv }
-                <$rhs> for u256 => { let $x = rhs; $conv }
+            $op <U256 ; $tr>::$method (rhs) {
+                <&'_ $rhs> for U256 => { let $x = *rhs; $conv }
+                <$rhs> for U256 => { let $x = rhs; $conv }
             }
         }
     )*};
@@ -319,7 +319,7 @@ macro_rules! impl_shifts_assign {
                 $wrap:path, $sh:tt
         }
     )*) => {$(
-        impl std::ops::$op<u32> for u256 {
+        impl std::ops::$op<u32> for U256 {
             #[inline]
             fn $method(&mut self, rhs: u32) {
                 binop_assign!($wrap, $sh [ self, rhs ])
@@ -327,17 +327,17 @@ macro_rules! impl_shifts_assign {
         }
 
         impl_ref_binop_assign! {
-            $op <u256 ; u32>::$method (rhs) {
-                <&'_ u32> for u256 => { *rhs }
+            $op <U256 ; u32>::$method (rhs) {
+                <&'_ u32> for U256 => { *rhs }
             }
         }
 
         impl_ref_binop_assign! {
-            $op <u256 ; u32>::$method (rhs) { u256 } => { *rhs.low() as _ }
+            $op <U256 ; u32>::$method (rhs) { U256 } => { *rhs.low() as _ }
         }
 
         impl_ref_binop_assign! {
-            $op <u256 ; u32>::$method (rhs) {
+            $op <U256 ; u32>::$method (rhs) {
                 i8, i16, i32, i64, i128, isize,
                 u8, u16, u64, u128, usize,
             } => { rhs as _ }
@@ -354,11 +354,11 @@ macro_rules! impl_bitwiseops_assign {
     ($(
         $op:ident { $method:ident }
     )*) => {$(
-        impl std::ops::$op<&'_ u256> for u256 {
+        impl std::ops::$op<&'_ U256> for U256 {
             #[inline]
-            fn $method(&mut self, rhs: &'_ u256) {
-                let u256([a, b]) = self;
-                let u256([rhs_a, rhs_b]) = rhs;
+            fn $method(&mut self, rhs: &'_ U256) {
+                let U256([a, b]) = self;
+                let U256([rhs_a, rhs_b]) = rhs;
                 a.$method(rhs_a);
                 b.$method(rhs_b);
             }
@@ -376,75 +376,75 @@ impl_bitwiseops_assign! {
 
 #[cfg(test)]
 mod tests {
-    use crate::u256;
+    use crate::U256;
     use std::ops::*;
 
     #[test]
     fn trait_implementations() {
         trait Implements {}
-        impl Implements for u256 {}
-        impl Implements for &'_ u256 {}
+        impl Implements for U256 {}
+        impl Implements for &'_ U256 {}
 
         fn assert_ops<T>()
         where
             for<'a> T: Implements
                 + Add<&'a u128>
-                + Add<&'a u256>
+                + Add<&'a U256>
                 + Add<u128>
-                + Add<u256>
+                + Add<U256>
                 + AddAssign<&'a u128>
-                + AddAssign<&'a u256>
+                + AddAssign<&'a U256>
                 + AddAssign<u128>
-                + AddAssign<u256>
+                + AddAssign<U256>
                 + BitAnd<&'a u128>
-                + BitAnd<&'a u256>
+                + BitAnd<&'a U256>
                 + BitAnd<u128>
-                + BitAnd<u256>
+                + BitAnd<U256>
                 + BitAndAssign<&'a u128>
-                + BitAndAssign<&'a u256>
+                + BitAndAssign<&'a U256>
                 + BitAndAssign<u128>
-                + BitAndAssign<u256>
+                + BitAndAssign<U256>
                 + BitOr<&'a u128>
-                + BitOr<&'a u256>
+                + BitOr<&'a U256>
                 + BitOr<u128>
-                + BitOr<u256>
+                + BitOr<U256>
                 + BitOrAssign<&'a u128>
-                + BitOrAssign<&'a u256>
+                + BitOrAssign<&'a U256>
                 + BitOrAssign<u128>
-                + BitOrAssign<u256>
+                + BitOrAssign<U256>
                 + BitXor<&'a u128>
-                + BitXor<&'a u256>
+                + BitXor<&'a U256>
                 + BitXor<u128>
-                + BitXor<u256>
+                + BitXor<U256>
                 + BitXorAssign<&'a u128>
-                + BitXorAssign<&'a u256>
+                + BitXorAssign<&'a U256>
                 + BitXorAssign<u128>
-                + BitXorAssign<u256>
+                + BitXorAssign<U256>
                 + Div<&'a u128>
-                + Div<&'a u256>
+                + Div<&'a U256>
                 + Div<u128>
-                + Div<u256>
+                + Div<U256>
                 + DivAssign<&'a u128>
-                + DivAssign<&'a u256>
+                + DivAssign<&'a U256>
                 + DivAssign<u128>
-                + DivAssign<u256>
+                + DivAssign<U256>
                 + Mul<&'a u128>
-                + Mul<&'a u256>
+                + Mul<&'a U256>
                 + Mul<u128>
-                + Mul<u256>
+                + Mul<U256>
                 + MulAssign<&'a u128>
-                + MulAssign<&'a u256>
+                + MulAssign<&'a U256>
                 + MulAssign<u128>
-                + MulAssign<u256>
+                + MulAssign<U256>
                 + Not
                 + Rem<&'a u128>
-                + Rem<&'a u256>
+                + Rem<&'a U256>
                 + Rem<u128>
-                + Rem<u256>
+                + Rem<U256>
                 + RemAssign<&'a u128>
-                + RemAssign<&'a u256>
+                + RemAssign<&'a U256>
                 + RemAssign<u128>
-                + RemAssign<u256>
+                + RemAssign<U256>
                 + Shl<&'a i128>
                 + Shl<&'a i16>
                 + Shl<&'a i32>
@@ -453,7 +453,7 @@ mod tests {
                 + Shl<&'a isize>
                 + Shl<&'a u128>
                 + Shl<&'a u16>
-                + Shl<&'a u256>
+                + Shl<&'a U256>
                 + Shl<&'a u32>
                 + Shl<&'a u64>
                 + Shl<&'a u8>
@@ -466,7 +466,7 @@ mod tests {
                 + Shl<isize>
                 + Shl<u128>
                 + Shl<u16>
-                + Shl<u256>
+                + Shl<U256>
                 + Shl<u32>
                 + Shl<u64>
                 + Shl<u8>
@@ -479,7 +479,7 @@ mod tests {
                 + ShlAssign<&'a isize>
                 + ShlAssign<&'a u128>
                 + ShlAssign<&'a u16>
-                + ShlAssign<&'a u256>
+                + ShlAssign<&'a U256>
                 + ShlAssign<&'a u32>
                 + ShlAssign<&'a u64>
                 + ShlAssign<&'a u8>
@@ -492,7 +492,7 @@ mod tests {
                 + ShlAssign<isize>
                 + ShlAssign<u128>
                 + ShlAssign<u16>
-                + ShlAssign<u256>
+                + ShlAssign<U256>
                 + ShlAssign<u32>
                 + ShlAssign<u64>
                 + ShlAssign<u8>
@@ -505,7 +505,7 @@ mod tests {
                 + Shr<&'a isize>
                 + Shr<&'a u128>
                 + Shr<&'a u16>
-                + Shr<&'a u256>
+                + Shr<&'a U256>
                 + Shr<&'a u32>
                 + Shr<&'a u64>
                 + Shr<&'a u8>
@@ -518,7 +518,7 @@ mod tests {
                 + Shr<isize>
                 + Shr<u128>
                 + Shr<u16>
-                + Shr<u256>
+                + Shr<U256>
                 + Shr<u32>
                 + Shr<u64>
                 + Shr<u8>
@@ -531,7 +531,7 @@ mod tests {
                 + ShrAssign<&'a isize>
                 + ShrAssign<&'a u128>
                 + ShrAssign<&'a u16>
-                + ShrAssign<&'a u256>
+                + ShrAssign<&'a U256>
                 + ShrAssign<&'a u32>
                 + ShrAssign<&'a u64>
                 + ShrAssign<&'a u8>
@@ -544,49 +544,49 @@ mod tests {
                 + ShrAssign<isize>
                 + ShrAssign<u128>
                 + ShrAssign<u16>
-                + ShrAssign<u256>
+                + ShrAssign<U256>
                 + ShrAssign<u32>
                 + ShrAssign<u64>
                 + ShrAssign<u8>
                 + ShrAssign<usize>
                 + Sub<&'a u128>
-                + Sub<&'a u256>
+                + Sub<&'a U256>
                 + Sub<u128>
-                + Sub<u256>
+                + Sub<U256>
                 + SubAssign<&'a u128>
-                + SubAssign<&'a u256>
+                + SubAssign<&'a U256>
                 + SubAssign<u128>
-                + SubAssign<u256>,
+                + SubAssign<U256>,
             for<'a> &'a T: Implements
                 + Add<&'a u128>
-                + Add<&'a u256>
+                + Add<&'a U256>
                 + Add<u128>
-                + Add<u256>
+                + Add<U256>
                 + BitAnd<&'a u128>
-                + BitAnd<&'a u256>
+                + BitAnd<&'a U256>
                 + BitAnd<u128>
-                + BitAnd<u256>
+                + BitAnd<U256>
                 + BitOr<&'a u128>
-                + BitOr<&'a u256>
+                + BitOr<&'a U256>
                 + BitOr<u128>
-                + BitOr<u256>
+                + BitOr<U256>
                 + BitXor<&'a u128>
-                + BitXor<&'a u256>
+                + BitXor<&'a U256>
                 + BitXor<u128>
-                + BitXor<u256>
+                + BitXor<U256>
                 + Div<&'a u128>
-                + Div<&'a u256>
+                + Div<&'a U256>
                 + Div<u128>
-                + Div<u256>
+                + Div<U256>
                 + Mul<&'a u128>
-                + Mul<&'a u256>
+                + Mul<&'a U256>
                 + Mul<u128>
-                + Mul<u256>
+                + Mul<U256>
                 + Not
                 + Rem<&'a u128>
-                + Rem<&'a u256>
+                + Rem<&'a U256>
                 + Rem<u128>
-                + Rem<u256>
+                + Rem<U256>
                 + Shl<&'a i128>
                 + Shl<&'a i16>
                 + Shl<&'a i32>
@@ -595,7 +595,7 @@ mod tests {
                 + Shl<&'a isize>
                 + Shl<&'a u128>
                 + Shl<&'a u16>
-                + Shl<&'a u256>
+                + Shl<&'a U256>
                 + Shl<&'a u32>
                 + Shl<&'a u64>
                 + Shl<&'a u8>
@@ -608,7 +608,7 @@ mod tests {
                 + Shl<isize>
                 + Shl<u128>
                 + Shl<u16>
-                + Shl<u256>
+                + Shl<U256>
                 + Shl<u32>
                 + Shl<u64>
                 + Shl<u8>
@@ -621,7 +621,7 @@ mod tests {
                 + Shr<&'a isize>
                 + Shr<&'a u128>
                 + Shr<&'a u16>
-                + Shr<&'a u256>
+                + Shr<&'a U256>
                 + Shr<&'a u32>
                 + Shr<&'a u64>
                 + Shr<&'a u8>
@@ -634,18 +634,18 @@ mod tests {
                 + Shr<isize>
                 + Shr<u128>
                 + Shr<u16>
-                + Shr<u256>
+                + Shr<U256>
                 + Shr<u32>
                 + Shr<u64>
                 + Shr<u8>
                 + Shr<usize>
                 + Sub<&'a u128>
-                + Sub<&'a u256>
+                + Sub<&'a U256>
                 + Sub<u128>
-                + Sub<u256>,
+                + Sub<U256>,
         {
         }
 
-        assert_ops::<u256>();
+        assert_ops::<U256>();
     }
 }

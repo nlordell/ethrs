@@ -1,10 +1,10 @@
-//! Module implementing formatting for `u256` type.
+//! Module implementing formatting for `U256` type.
 //!
 //! Most of these implementations were ported from the Rust standard library's
 //! implementation for primitive integer types:
 //! https://doc.rust-lang.org/src/core/fmt/num.rs.html
 
-use crate::{u256, AsU256};
+use crate::{AsU256, U256};
 use std::fmt;
 use std::mem::MaybeUninit;
 use std::num::ParseIntError;
@@ -12,8 +12,8 @@ use std::ptr;
 use std::slice;
 use std::str::{self, FromStr};
 
-/// Converts a string slice in a given base to an `u256`.
-pub(crate) fn from_str_radix(src: &str, radix: u32) -> Result<u256, ParseIntError> {
+/// Converts a string slice in a given base to an `U256`.
+pub(crate) fn from_str_radix(src: &str, radix: u32) -> Result<U256, ParseIntError> {
     assert!(
         radix >= 2 && radix <= 36,
         "from_str_radix_int: must lie in the range `[2, 36]` - found {}",
@@ -24,7 +24,7 @@ pub(crate) fn from_str_radix(src: &str, radix: u32) -> Result<u256, ParseIntErro
         return Err(Pie::Empty.into());
     }
 
-    let mut result = u256::ZERO;
+    let mut result = U256::ZERO;
     for &c in src.as_bytes() {
         let x = match (c as char).to_digit(radix) {
             Some(x) => x,
@@ -57,7 +57,7 @@ impl Into<ParseIntError> for Pie {
     }
 }
 
-impl FromStr for u256 {
+impl FromStr for U256 {
     type Err = ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -65,7 +65,7 @@ impl FromStr for u256 {
     }
 }
 
-impl fmt::Debug for u256 {
+impl fmt::Debug for U256 {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // NOTE: Work around `Formatter::debug_{lower,upper}_hex` being private
@@ -93,7 +93,7 @@ const DEC_DIGITS_LUT: &[u8; 200] = b"\
     6061626364656667686970717273747576777879\
     8081828384858687888990919293949596979899";
 
-impl fmt::Display for u256 {
+impl fmt::Display for U256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut n = *self;
 
@@ -162,7 +162,7 @@ impl fmt::Display for u256 {
 }
 
 pub(crate) fn fmt_radix(
-    mut x: u256,
+    mut x: U256,
     base: usize,
     prefix: &str,
     digits: &[u8],
@@ -198,35 +198,35 @@ pub(crate) fn fmt_radix(
     f.pad_integral(true, prefix, buf)
 }
 
-impl fmt::Binary for u256 {
+impl fmt::Binary for U256 {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt_radix(*self, 2, "0b", b"01", f)
     }
 }
 
-impl fmt::Octal for u256 {
+impl fmt::Octal for U256 {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt_radix(*self, 8, "0o", b"01234567", f)
     }
 }
 
-impl fmt::LowerHex for u256 {
+impl fmt::LowerHex for U256 {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt_radix(*self, 16, "0x", b"0123456789abcdef", f)
     }
 }
 
-impl fmt::UpperHex for u256 {
+impl fmt::UpperHex for U256 {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt_radix(*self, 16, "0x", b"0123456789ABCDEF", f)
     }
 }
 
-impl fmt::LowerExp for u256 {
+impl fmt::LowerExp for U256 {
     #[allow(unused_comparisons)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO(nlordell): Ideally this should be implemented with a similar
@@ -239,7 +239,7 @@ impl fmt::LowerExp for u256 {
     }
 }
 
-impl fmt::UpperExp for u256 {
+impl fmt::UpperExp for U256 {
     #[allow(unused_comparisons)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::UpperExp::fmt(&self.as_f64(), f)
@@ -252,23 +252,23 @@ mod test {
 
     #[test]
     fn parse_int_error() {
-        assert_eq!(u8::from_str_radix("", 2), Err(Pie::Empty.into()));
-        assert_eq!(u8::from_str_radix("?", 2), Err(Pie::InvalidDigit.into()));
-        assert_eq!(u8::from_str_radix("zz", 36), Err(Pie::Overflow.into()));
+        assert_eq!(U256::from_str_radix("", 2), Err(Pie::Empty.into()));
+        assert_eq!(U256::from_str_radix("?", 2), Err(Pie::InvalidDigit.into()));
+        assert_eq!(U256::from_str_radix("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", 36), Err(Pie::Overflow.into()));
     }
 
     #[test]
     fn debug() {
         assert_eq!(
-            format!("{:?}", u256::MAX),
+            format!("{:?}", U256::MAX),
             "115792089237316195423570985008687907853269984665640564039457584007913129639935",
         );
         assert_eq!(
-            format!("{:x?}", u256::MAX),
+            format!("{:x?}", U256::MAX),
             "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
         );
         assert_eq!(
-            format!("{:#X?}", u256::MAX),
+            format!("{:#X?}", U256::MAX),
             "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
         );
     }
@@ -276,23 +276,22 @@ mod test {
     #[test]
     fn display() {
         assert_eq!(
-            format!("{}", u256::MAX),
+            format!("{}", U256::MAX),
             "115792089237316195423570985008687907853269984665640564039457584007913129639935",
         );
     }
 
     #[test]
     fn radix() {
-        assert_eq!(format!("{:b}", u256::new(42)), "101010");
-        assert_eq!(format!("{:o}", u256::new(42)), "52");
-        assert_eq!(format!("{:x}", u256::new(42)), "2a");
+        assert_eq!(format!("{:b}", U256::new(42)), "101010");
+        assert_eq!(format!("{:o}", U256::new(42)), "52");
+        assert_eq!(format!("{:x}", U256::new(42)), "2a");
     }
 
     #[test]
-    #[ignore]
     fn exp() {
-        assert_eq!(format!("{:e}", u256::new(42)), "4.2e1");
-        assert_eq!(format!("{:e}", u256::new(10).pow(77)), "1E77");
-        assert_eq!(format!("{:E}", u256::new(10).pow(39) * 1337), "1.337E42");
+        assert_eq!(format!("{:e}", U256::new(42)), "4.2e1");
+        assert_eq!(format!("{:e}", U256::new(10).pow(77)), "1e77");
+        assert_eq!(format!("{:E}", U256::new(10).pow(39) * 1337), "1.337E42");
     }
 }

@@ -7,7 +7,7 @@
 mod divmod;
 
 pub use self::divmod::*;
-use crate::u256;
+use crate::U256;
 use std::mem::MaybeUninit;
 
 macro_rules! def {
@@ -46,27 +46,27 @@ macro_rules! link {
 }
 
 def! {
-    pub fn add2(r: &mut u256, a: &u256);
-    pub fn add3(r: &mut MaybeUninit<u256>, a: &u256, b: &u256);
-    pub fn addc(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) -> bool;
+    pub fn add2(r: &mut U256, a: &U256);
+    pub fn add3(r: &mut MaybeUninit<U256>, a: &U256, b: &U256);
+    pub fn addc(r: &mut MaybeUninit<U256>, a: &U256, b: &U256) -> bool;
 
-    pub fn mul2(r: &mut u256, a: &u256);
-    pub fn mul3(r: &mut MaybeUninit<u256>, a: &u256, b: &u256);
-    pub fn mulc(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) -> bool;
+    pub fn mul2(r: &mut U256, a: &U256);
+    pub fn mul3(r: &mut MaybeUninit<U256>, a: &U256, b: &U256);
+    pub fn mulc(r: &mut MaybeUninit<U256>, a: &U256, b: &U256) -> bool;
 
-    pub fn sub2(r: &mut u256, a: &u256);
-    pub fn sub3(r: &mut MaybeUninit<u256>, a: &u256, b: &u256);
-    pub fn subc(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) -> bool;
+    pub fn sub2(r: &mut U256, a: &U256);
+    pub fn sub3(r: &mut MaybeUninit<U256>, a: &U256, b: &U256);
+    pub fn subc(r: &mut MaybeUninit<U256>, a: &U256, b: &U256) -> bool;
 
-    pub fn shl2(r: &mut u256, a: u32);
-    pub fn shl3(r: &mut MaybeUninit<u256>, a: &u256, b: u32);
+    pub fn shl2(r: &mut U256, a: u32);
+    pub fn shl3(r: &mut MaybeUninit<U256>, a: &U256, b: u32);
 
-    pub fn shr2(r: &mut u256, a: u32);
-    pub fn shr3(r: &mut MaybeUninit<u256>, a: &u256, b: u32);
+    pub fn shr2(r: &mut U256, a: u32);
+    pub fn shr3(r: &mut MaybeUninit<U256>, a: &U256, b: u32);
 
-    pub fn rotate_left(r: &mut MaybeUninit<u256>, a: &u256, b: u32);
-    pub fn rotate_right(r: &mut MaybeUninit<u256>, a: &u256, b: u32);
+    pub fn rotate_left(r: &mut MaybeUninit<U256>, a: &U256, b: u32);
+    pub fn rotate_right(r: &mut MaybeUninit<U256>, a: &U256, b: u32);
 
-    pub fn ctlz(a: &u256) -> u32;
-    pub fn cttz(a: &u256) -> u32;
+    pub fn ctlz(a: &U256) -> u32;
+    pub fn cttz(a: &U256) -> u32;
 }

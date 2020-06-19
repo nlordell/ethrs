@@ -7,11 +7,11 @@
 //! This source is ported from LLVM project from C:
 //! https://github.com/llvm/llvm-project/blob/master/compiler-rt/lib/builtins/multi3.c
 
-use crate::u256;
+use crate::U256;
 use std::mem::MaybeUninit;
 
 #[inline]
-pub fn mulddi3(a: &u128, b: &u128) -> u256 {
+pub fn mulddi3(a: &u128, b: &u128) -> U256 {
     let mut high;
     let mut low;
 
@@ -31,11 +31,11 @@ pub fn mulddi3(a: &u128, b: &u128) -> u256 {
     high += t >> BITS_IN_DWORD_2;
     high += (a >> BITS_IN_DWORD_2) * (b >> BITS_IN_DWORD_2);
 
-    u256::from_words(high, low)
+    U256::from_words(high, low)
 }
 
 #[inline]
-pub fn mul3(res: &mut MaybeUninit<u256>, a: &u256, b: &u256) {
+pub fn mul3(res: &mut MaybeUninit<U256>, a: &U256, b: &U256) {
     let mut r = mulddi3(a.low(), b.low());
 
     let hi_lo = a.high().wrapping_mul(*b.low());
@@ -48,16 +48,16 @@ pub fn mul3(res: &mut MaybeUninit<u256>, a: &u256, b: &u256) {
 }
 
 #[inline]
-pub fn mul2(r: &mut u256, a: &u256) {
+pub fn mul2(r: &mut U256, a: &U256) {
     let (a, b) = (*r, a);
     // SAFETY: `multi3` does not write `MaybeUninit::uninit()` to `res` and
-    // `u256` does not implement `Drop`.
-    let res = unsafe { &mut *(r as *mut u256).cast() };
+    // `U256` does not implement `Drop`.
+    let res = unsafe { &mut *(r as *mut U256).cast() };
     mul3(res, &a, b);
 }
 
 #[inline]
-pub fn mulc(r: &mut MaybeUninit<u256>, a: &u256, b: &u256) -> bool {
+pub fn mulc(r: &mut MaybeUninit<U256>, a: &U256, b: &U256) -> bool {
     let mut res = mulddi3(a.low(), b.low());
 
     let (hi_lo, overflow_hi_lo) = a.high().overflowing_mul(*b.low());
@@ -77,7 +77,7 @@ mod tests {
     use super::*;
     use crate::AsU256;
 
-    fn mul(a: impl AsU256, b: impl AsU256) -> (u256, bool) {
+    fn mul(a: impl AsU256, b: impl AsU256) -> (U256, bool) {
         let mut r = MaybeUninit::uninit();
         let overflow = mulc(&mut r, &a.as_u256(), &b.as_u256());
         (unsafe { r.assume_init() }, overflow)
@@ -87,15 +87,15 @@ mod tests {
     fn multiplication() {
         assert_eq!(mul(6, 7), (42.as_u256(), false));
 
-        assert_eq!(mul(u256::MAX, 1), (u256::MAX, false));
-        assert_eq!(mul(1, u256::MAX), (u256::MAX, false));
-        assert_eq!(mul(u256::MAX, 0), (u256::ZERO, false));
-        assert_eq!(mul(0, u256::MAX), (u256::ZERO, false));
+        assert_eq!(mul(U256::MAX, 1), (U256::MAX, false));
+        assert_eq!(mul(1, U256::MAX), (U256::MAX, false));
+        assert_eq!(mul(U256::MAX, 0), (U256::ZERO, false));
+        assert_eq!(mul(0, U256::MAX), (U256::ZERO, false));
 
-        assert_eq!(mul(u256::MAX, 5), (u256::MAX ^ 4, true));
+        assert_eq!(mul(U256::MAX, 5), (U256::MAX ^ 4, true));
         assert_eq!(
             mul(u128::MAX, u128::MAX),
-            (u256::from_words(!0 << 1, 1), false),
+            (U256::from_words(!0 << 1, 1), false),
         );
     }
 }

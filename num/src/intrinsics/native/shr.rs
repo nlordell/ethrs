@@ -1,10 +1,10 @@
 //! Module containing logical right shift intrinsic.
 
-use crate::u256;
+use crate::U256;
 use std::mem::MaybeUninit;
 
 #[inline]
-pub fn shr2(r: &mut u256, a: u32) {
+pub fn shr2(r: &mut U256, a: u32) {
     debug_assert!(a < 256, "shr intrinsic called with overflowing shift");
 
     let (hi, lo) = if a == 0 {
@@ -15,11 +15,11 @@ pub fn shr2(r: &mut u256, a: u32) {
         (r.low() >> (a & 0x7f), 0)
     };
 
-    *r = u256::from_words(hi, lo);
+    *r = U256::from_words(hi, lo);
 }
 
 #[inline]
-pub fn shr3(r: &mut MaybeUninit<u256>, a: &u256, b: u32) {
+pub fn shr3(r: &mut MaybeUninit<U256>, a: &U256, b: u32) {
     debug_assert!(b < 256, "shr intrinsic called with overflowing shift");
 
     let (hi, lo) = if b == 0 {
@@ -31,6 +31,6 @@ pub fn shr3(r: &mut MaybeUninit<u256>, a: &u256, b: u32) {
     };
 
     unsafe {
-        r.as_mut_ptr().write(u256::from_words(hi, lo));
+        r.as_mut_ptr().write(U256::from_words(hi, lo));
     }
 }

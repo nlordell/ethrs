@@ -1,5 +1,5 @@
 //! This module is used as atemplate to generate LLVM IR for `u128` intrinsics
-//! which is used as a template `u256` intrinsics.
+//! which is used as a template `U256` intrinsics.
 //!
 //! This is done instead of hand-writting LLVM IR to ensure that the attributes
 //! on functions and parameters are as accurate as possible for the resulting

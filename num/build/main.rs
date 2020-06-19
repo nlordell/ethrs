@@ -16,7 +16,7 @@ fn main() -> Result<()> {
 }
 
 /// Generates object for LLVM IR integer intrinsics. This enables the crate to
-/// use compiler generated `u256` operations (such as addition, multiplication)
+/// use compiler generated `U256` operations (such as addition, multiplication)
 /// instead of native Rust implementation.
 ///
 /// Setting the environment variable `RUST_ETHNUM_GENERATE_INTRINSICS=1` enables
