@@ -49,7 +49,7 @@ impl_try_from! {
 /// to an integer is a saturating operation, with `NaN` converting to `0`. So:
 ///
 /// ```
-/// # use ethrs_num::{u256, AsU256};
+/// # use ethnum::{u256, AsU256};
 /// assert_eq!((-1i32).as_u256(), u256::MAX);
 /// assert_eq!(u32::MAX.as_u256(), 0xffffffff);
 ///
@@ -181,19 +181,146 @@ impl_try_into! {
 }
 
 macro_rules! impl_into_float {
-    ($($t:ty),* $(,)?) => {$(
+    ($($t:ty => $f:ident),* $(,)?) => {$(
         impl Into<$t> for u256 {
             #[inline]
             fn into(self) -> $t {
-                match self.into_words() {
-                    (0, lo) => lo as $t,
-                    (hi, lo) => (hi as $t) * (2. as $t).powi(128) + (lo as $t),
-                }
+                self.$f()
             }
         }
     )*};
 }
 
 impl_into_float! {
-    f32, f64,
+    f32 => as_f32, f64 => as_f64,
+}
+
+impl u256 {
+    /// Casts a [`u256`] to a primitive [`i8`], wrapping if it would overflow
+    /// the primitive integer.
+    ///
+    /// [`u256`]: struct.u256.html
+    pub const fn as_i8(self) -> i8 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Casts a [`u256`] to a primitive [`i16`], wrapping if it would overflow
+    /// the primitive integer.
+    ///
+    /// [`u256`]: struct.u256.html
+    pub const fn as_i16(self) -> i16 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Casts a [`u256`] to a primitive [`i32`], wrapping if it would overflow
+    /// the primitive integer.
+    ///
+    /// [`u256`]: struct.u256.html
+    pub const fn as_i32(self) -> i32 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Casts a [`u256`] to a primitive [`i64`], wrapping if it would overflow
+    /// the primitive integer.
+    ///
+    /// [`u256`]: struct.u256.html
+    pub const fn as_i64(self) -> i64 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Casts a [`u256`] to a primitive [`i128`], wrapping if it would overflow
+    /// the primitive integer.
+    ///
+    /// [`u256`]: struct.u256.html
+    pub const fn as_i128(self) -> i128 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Casts a [`u256`] to a primitive [`u8`], wrapping if it would overflow
+    /// the primitive integer.
+    ///
+    /// [`u256`]: struct.u256.html
+    pub const fn as_u8(self) -> u8 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Casts a [`u256`] to a primitive [`u16`], wrapping if it would overflow
+    /// the primitive integer.
+    ///
+    /// [`u256`]: struct.u256.html
+    pub const fn as_u16(self) -> u16 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Casts a [`u256`] to a primitive [`u32`], wrapping if it would overflow
+    /// the primitive integer.
+    ///
+    /// [`u256`]: struct.u256.html
+    pub const fn as_u32(self) -> u32 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Casts a [`u256`] to a primitive [`u64`], wrapping if it would overflow
+    /// the primitive integer.
+    ///
+    /// [`u256`]: struct.u256.html
+    pub const fn as_u64(self) -> u64 {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Casts a [`u256`] to a primitive [`u128`], wrapping if it would overflow
+    /// the primitive integer.
+    ///
+    /// [`u256`]: struct.u256.html
+    pub const fn as_u128(self) -> u128 {
+        let (_, lo) = self.into_words();
+        lo
+    }
+
+    /// Casts a [`u256`] to a primitive [`isize`], wrapping if it would overflow
+    /// the primitive integer.
+    ///
+    /// [`u256`]: struct.u256.html
+    pub const fn as_isize(self) -> isize {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Casts a [`u256`] to a primitive [`usize`], wrapping if it would overflow
+    /// the primitive integer.
+    ///
+    /// [`u256`]: struct.u256.html
+    pub const fn as_usize(self) -> usize {
+        let (_, lo) = self.into_words();
+        lo as _
+    }
+
+    /// Casts a [`u256`] to a primitive [`f32`].
+    ///
+    /// [`u256`]: struct.u256.html
+    pub fn as_f32(self) -> f32 {
+        match self.into_words() {
+            (0, lo) => lo as _,
+            _ => f32::INFINITY,
+        }
+    }
+
+    /// Casts a [`u256`] to a primitive [`f64`].
+    ///
+    /// [`u256`]: struct.u256.html
+    pub fn as_f64(self) -> f64 {
+        match self.into_words() {
+            (0, lo) => lo as _,
+            (hi, lo) => (hi as f64) * (2.0f64).powi(128) + (lo as f64),
+        }
+    }
 }

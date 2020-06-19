@@ -226,139 +226,23 @@ impl fmt::UpperHex for u256 {
     }
 }
 
-fn fmt_exp(mut n: u256, upper: bool, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    let (mut n, mut exponent, trailing_zeros, added_precision) = {
-        let mut exponent = 0;
-        // count and remove trailing decimal zeroes
-        while n % 10 == 0 && n >= 10 {
-            n /= 10;
-            exponent += 1;
-        }
-        let trailing_zeros = exponent;
-
-        let (added_precision, subtracted_precision) = match f.precision() {
-            Some(fmt_prec) => {
-                // number of decimal digits minus 1
-                let mut tmp = n;
-                let mut prec = 0;
-                while tmp >= 10 {
-                    tmp /= 10;
-                    prec += 1;
-                }
-                (fmt_prec.saturating_sub(prec), prec.saturating_sub(fmt_prec))
-            }
-            None => (0, 0),
-        };
-        for _ in 1..subtracted_precision {
-            n /= 10;
-            exponent += 1;
-        }
-        if subtracted_precision != 0 {
-            let rem = n % 10;
-            n /= 10;
-            exponent += 1;
-            // round up last digit
-            if rem >= 5 {
-                n += 1;
-            }
-        }
-        (n, exponent, trailing_zeros, added_precision)
-    };
-
-    // 79 digits (worst case u256) + . = 80
-    // Since `curr` always decreases by the number of digits copied, this means
-    // that `curr >= 0`.
-    let mut buf = [MaybeUninit::<u8>::uninit(); 80];
-    let mut curr = buf.len() as isize; //index for buf
-    let buf_ptr = &mut buf[0] as *mut _ as *mut u8;
-    let lut_ptr = DEC_DIGITS_LUT.as_ptr();
-
-    // decode 2 chars at a time
-    while n >= 100 {
-        let d1 = ((n.low() % 100) as isize) << 1;
-        curr -= 2;
-        // SAFETY: `d1 <= 198`, so we can copy from `lut_ptr[d1..d1 + 2]` since
-        // `DEC_DIGITS_LUT` has a length of 200.
-        unsafe {
-            ptr::copy_nonoverlapping(lut_ptr.offset(d1), buf_ptr.offset(curr), 2);
-        }
-        n /= 100;
-        exponent += 2;
-    }
-    // n is <= 99, so at most 2 chars long
-    let mut n = *n.low() as isize; // possibly reduce 64bit math
-                                   // decode second-to-last character
-    if n >= 10 {
-        curr -= 1;
-        // SAFETY: Safe since `40 > curr >= 0` (see comment)
-        unsafe {
-            *buf_ptr.offset(curr) = (n as u8 % 10_u8) + b'0';
-        }
-        n /= 10;
-        exponent += 1;
-    }
-    // add decimal point iff >1 mantissa digit will be printed
-    if exponent != trailing_zeros || added_precision != 0 {
-        curr -= 1;
-        // SAFETY: Safe since `40 > curr >= 0`
-        unsafe {
-            *buf_ptr.offset(curr) = b'.';
-        }
-    }
-
-    // SAFETY: Safe since `40 > curr >= 0`
-    let buf_slice = unsafe {
-        // decode last character
-        curr -= 1;
-        *buf_ptr.offset(curr) = (n as u8) + b'0';
-
-        let len = buf.len() - curr as usize;
-        slice::from_raw_parts(buf_ptr.offset(curr), len)
-    };
-
-    // stores 'e' (or 'E') and the up to 2-digit exponent
-    let mut exp_buf = [MaybeUninit::<u8>::uninit(); 3];
-    let exp_ptr = &mut exp_buf[0] as *mut _ as *mut u8;
-    // SAFETY: In either case, `exp_buf` is written within bounds and `exp_ptr[..len]`
-    // is contained within `exp_buf` since `len <= 3`.
-    let exp_slice = unsafe {
-        *exp_ptr.offset(0) = if upper { b'E' } else { b'e' };
-        let len = if exponent < 10 {
-            *exp_ptr.offset(1) = (exponent as u8) + b'0';
-            2
-        } else {
-            let off = exponent << 1;
-            ptr::copy_nonoverlapping(lut_ptr.offset(off), exp_ptr.offset(1), 2);
-            3
-        };
-        slice::from_raw_parts(exp_ptr, len)
-    };
-
-    let _ = (buf_slice, exp_slice);
-    /*
-    let parts = &[
-        flt2dec::Part::Copy(buf_slice),
-        flt2dec::Part::Zero(added_precision),
-        flt2dec::Part::Copy(exp_slice),
-    ];
-    let sign = if f.sign_plus() { "+" } else { "" };
-    let formatted = flt2dec::Formatted { sign, parts };
-    f.pad_formatted_parts(&formatted)
-    */
-    todo!()
-}
-
 impl fmt::LowerExp for u256 {
     #[allow(unused_comparisons)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_exp(*self, false, f)
+        // TODO(nlordell): Ideally this should be implemented with a similar
+        // to the primitive integer types as seen here:
+        // https://doc.rust-lang.org/src/core/fmt/num.rs.html#274
+        // Unfortunately, just porting this implementation is not possible as it
+        // requires private standard library items. For now, just convert to
+        // a `f64` as an approximation.
+        fmt::LowerExp::fmt(&self.as_f64(), f)
     }
 }
 
 impl fmt::UpperExp for u256 {
     #[allow(unused_comparisons)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_exp(*self, true, f)
+        fmt::UpperExp::fmt(&self.as_f64(), f)
     }
 }
 

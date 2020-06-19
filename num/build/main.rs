@@ -19,21 +19,21 @@ fn main() -> Result<()> {
 /// use compiler generated `u256` operations (such as addition, multiplication)
 /// instead of native Rust implementation.
 ///
-/// Defining the `ETHRS_NUM_GENERATE_INTRINSICS` environment variable controls
-/// enables generated intrinsics.
+/// Setting the environment variable `RUST_ETHNUM_GENERATE_INTRINSICS=1` enables
+/// generated intrinsics.
 ///
 /// Note that generating intrinsics requires a Clang toolchain to compile LLVM
 /// IR, but has some advantages. Specifically, it detects and enables ThinLTO
 /// for the compiled LLVM IR, which allows the linker to perform link-time
 /// optimizations such as inlining some of the intrinsics (such as `add*`) which
-/// has some REAL performance benefits.
+/// has some **REAL** performance benefits.
 ///
 /// Returns `true` if intrinsics were generated, `false` otherwise.
 fn generate() -> Result<bool> {
-    const VAR: &str = "ETHRS_NUM_GENERATE_INTRINSICS";
+    const VAR: &str = "RUST_ETHNUM_GENERATE_INTRINSICS";
 
     println!("cargo:rerun-if-env-changed={}", VAR);
-    if env::var(VAR).is_err() {
+    if !matches!(env::var(VAR), Ok(var) if var == "1") {
         return Ok(false);
     }
 

@@ -32,7 +32,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::from_str_radix("A", 16), Ok(u256::new(10)));
     /// ```
     #[inline]
@@ -47,7 +47,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = u256::new(0b01001100);
     /// assert_eq!(n.count_ones(), 3);
     /// ```
@@ -64,7 +64,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::MIN.count_zeros(), 256);
     /// assert_eq!(u256::MAX.count_zeros(), 0);
     /// ```
@@ -82,7 +82,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = u256::MAX >> 2u32;
     /// assert_eq!(n.leading_zeros(), 2);
     /// ```
@@ -99,7 +99,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = u256::new(0b0101000);
     /// assert_eq!(n.trailing_zeros(), 3);
     /// ```
@@ -116,7 +116,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = !(u256::MAX >> 2u32);
     /// assert_eq!(n.leading_ones(), 2);
     /// ```
@@ -133,7 +133,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = u256::new(0b1010111);
     /// assert_eq!(n.trailing_ones(), 3);
     /// ```
@@ -153,7 +153,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = u256::from_words(
     ///     0x13f40000000000000000000000000000,
     ///     0x00000000000000000000000000004f76,
@@ -180,7 +180,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = u256::new(0x4f7613f4);
     /// let m = u256::from_words(
     ///     0x13f40000000000000000000000000000,
@@ -205,7 +205,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = u256::from_words(
     ///     0x00010203_04050607_08090a0b_0c0d0e0f,
     ///     0x10111213_14151617_18191a1b_1c1d1e1f,
@@ -231,7 +231,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = u256::from_words(
     ///     0x00010203_04050607_08090a0b_0c0d0e0f,
     ///     0x10111213_14151617_18191a1b_1c1d1e1f,
@@ -259,7 +259,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = u256::new(0x1A);
     /// if cfg!(target_endian = "big") {
     ///     assert_eq!(u256::from_be(n), n);
@@ -289,7 +289,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = u256::new(0x1A);
     /// if cfg!(target_endian = "little") {
     ///     assert_eq!(u256::from_le(n), n)
@@ -319,7 +319,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = u256::new(0x1A);
     /// if cfg!(target_endian = "big") {
     ///     assert_eq!(n.to_be(), n)
@@ -348,7 +348,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let n = u256::new(0x1A);
     /// if cfg!(target_endian = "little") {
     ///     assert_eq!(n.to_le(), n)
@@ -376,7 +376,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!((u256::MAX - 2).checked_add(u256::new(1)), Some(u256::MAX - 1));
     /// assert_eq!((u256::MAX - 2).checked_add(u256::new(3)), None);
     /// ```
@@ -400,7 +400,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(1).checked_sub(u256::new(1)), Some(u256::ZERO));
     /// assert_eq!(u256::new(0).checked_sub(u256::new(1)), None);
     /// ```
@@ -424,7 +424,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(5).checked_mul(u256::new(1)), Some(u256::new(5)));
     /// assert_eq!(u256::MAX.checked_mul(u256::new(2)), None);
     /// ```
@@ -448,7 +448,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(128).checked_div(u256::new(2)), Some(u256::new(64)));
     /// assert_eq!(u256::new(1).checked_div(u256::new(0)), None);
     /// ```
@@ -471,7 +471,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(128).checked_div_euclid(u256::new(2)), Some(u256::new(64)));
     /// assert_eq!(u256::new(1).checked_div_euclid(u256::new(0)), None);
     /// ```
@@ -494,7 +494,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(5).checked_rem(u256::new(2)), Some(u256::new(1)));
     /// assert_eq!(u256::new(5).checked_rem(u256::new(0)), None);
     /// ```
@@ -517,7 +517,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(5).checked_rem_euclid(u256::new(2)), Some(u256::new(1)));
     /// assert_eq!(u256::new(5).checked_rem_euclid(u256::new(0)), None);
     /// ```
@@ -541,7 +541,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::ZERO.checked_neg(), Some(u256::ZERO));
     /// assert_eq!(u256::new(1).checked_neg(), None);
     /// ```
@@ -563,7 +563,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(0x1).checked_shl(4), Some(u256::new(0x10)));
     /// assert_eq!(u256::new(0x10).checked_shl(257), None);
     /// ```
@@ -587,7 +587,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(0x10).checked_shr(4), Some(u256::new(0x1)));
     /// assert_eq!(u256::new(0x10).checked_shr(257), None);
     /// ```
@@ -611,7 +611,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(2).checked_pow(5), Some(u256::new(32)));
     /// assert_eq!(u256::MAX.checked_pow(2), None);
     /// ```
@@ -648,7 +648,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(100).saturating_add(u256::new(1)), u256::new(101));
     /// assert_eq!(u256::MAX.saturating_add(u256::new(127)), u256::MAX);
     /// ```
@@ -668,7 +668,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(100).saturating_sub(u256::new(27)), u256::new(73));
     /// assert_eq!(u256::new(13).saturating_sub(u256::new(127)), u256::new(0));
     /// ```
@@ -687,7 +687,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(2).saturating_mul(u256::new(10)), u256::new(20));
     /// assert_eq!((u256::MAX).saturating_mul(u256::new(10)), u256::MAX);
     /// ```
@@ -709,7 +709,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(4).saturating_pow(3), u256::new(64));
     /// assert_eq!(u256::MAX.saturating_pow(2), u256::MAX);
     /// ```
@@ -731,7 +731,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(200).wrapping_add(u256::new(55)), u256::new(255));
     /// assert_eq!(u256::new(200).wrapping_add(u256::MAX), u256::new(199));
     /// ```
@@ -752,7 +752,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(100).wrapping_sub(u256::new(100)), u256::new(0));
     /// assert_eq!(u256::new(100).wrapping_sub(u256::MAX), u256::new(101));
     /// ```
@@ -776,7 +776,7 @@ impl u256 {
     /// Which explains why `u8` is used here.
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(10).wrapping_mul(u256::new(12)), u256::new(120));
     /// assert_eq!(u256::MAX.wrapping_mul(u256::new(2)), u256::MAX - 1);
     /// ```
@@ -799,7 +799,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(100).wrapping_div(u256::new(10)), u256::new(10));
     /// ```
     #[must_use = "this returns the result of the operation, \
@@ -821,7 +821,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(100).wrapping_div_euclid(u256::new(10)), u256::new(10));
     /// ```
     #[must_use = "this returns the result of the operation, \
@@ -841,7 +841,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(100).wrapping_rem(u256::new(10)), u256::new(0));
     /// ```
     #[must_use = "this returns the result of the operation, \
@@ -863,7 +863,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(100).wrapping_rem_euclid(u256::new(10)), u256::new(0));
     /// ```
     #[must_use = "this returns the result of the operation, \
@@ -891,7 +891,7 @@ impl u256 {
     /// Which explains why `i8` is used here.
     ///
     /// ```
-    /// # use ethrs_num::{u256, AsU256};
+    /// # use ethnum::{u256, AsU256};
     /// assert_eq!(u256::new(100).wrapping_neg(), (-100i128).as_u256());
     /// assert_eq!(
     ///     u256::from_words(i128::MIN as _, 0).wrapping_neg(),
@@ -920,7 +920,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(1).wrapping_shl(7), u256::new(128));
     /// assert_eq!(u256::new(1).wrapping_shl(128), u256::from_words(1, 0));
     /// assert_eq!(u256::new(1).wrapping_shl(256), u256::new(1));
@@ -949,7 +949,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(128).wrapping_shr(7), u256::new(1));
     /// assert_eq!(u256::from_words(128, 0).wrapping_shr(128), u256::new(128));
     /// assert_eq!(u256::new(128).wrapping_shr(256), u256::new(128));
@@ -971,7 +971,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(3).wrapping_pow(5), u256::new(243));
     /// assert_eq!(
     ///     u256::new(1337).wrapping_pow(42),
@@ -1017,7 +1017,7 @@ impl u256 {
     /// Basic usage
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(5).overflowing_add(u256::new(2)), (u256::new(7), false));
     /// assert_eq!(u256::MAX.overflowing_add(u256::new(1)), (u256::new(0), true));
     /// ```
@@ -1041,7 +1041,7 @@ impl u256 {
     /// Basic usage
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(5).overflowing_sub(u256::new(2)), (u256::new(3), false));
     /// assert_eq!(u256::new(0).overflowing_sub(u256::new(1)), (u256::MAX, true));
     /// ```
@@ -1068,7 +1068,7 @@ impl u256 {
     /// Which explains why `u32` is used here.
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(5).overflowing_mul(u256::new(2)), (u256::new(10), false));
     /// assert_eq!(
     ///     u256::MAX.overflowing_mul(u256::new(2)),
@@ -1099,7 +1099,7 @@ impl u256 {
     /// Basic usage
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(5).overflowing_div(u256::new(2)), (u256::new(2), false));
     /// ```
     #[must_use = "this returns the result of the operation, \
@@ -1126,7 +1126,7 @@ impl u256 {
     /// Basic usage
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(5).overflowing_div_euclid(u256::new(2)), (u256::new(2), false));
     /// ```
     #[must_use = "this returns the result of the operation, \
@@ -1152,7 +1152,7 @@ impl u256 {
     /// Basic usage
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(5).overflowing_rem(u256::new(2)), (u256::new(1), false));
     /// ```
     #[must_use = "this returns the result of the operation, \
@@ -1181,7 +1181,7 @@ impl u256 {
     /// Basic usage
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(5).overflowing_rem_euclid(u256::new(2)), (u256::new(1), false));
     /// ```
     #[must_use = "this returns the result of the operation, \
@@ -1203,7 +1203,7 @@ impl u256 {
     /// Basic usage
     ///
     /// ```
-    /// # use ethrs_num::{u256, AsU256};
+    /// # use ethnum::{u256, AsU256};
     /// assert_eq!(u256::new(0).overflowing_neg(), (u256::new(0), false));
     /// assert_eq!(u256::new(2).overflowing_neg(), ((-2i32).as_u256(), true));
     /// ```
@@ -1225,7 +1225,7 @@ impl u256 {
     /// Basic usage
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(0x1).overflowing_shl(4), (u256::new(0x10), false));
     /// assert_eq!(u256::new(0x1).overflowing_shl(260), (u256::new(0x10), true));
     /// ```
@@ -1249,7 +1249,7 @@ impl u256 {
     /// Basic usage
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(0x10).overflowing_shr(4), (u256::new(0x1), false));
     /// assert_eq!(u256::new(0x10).overflowing_shr(260), (u256::new(0x1), true));
     /// ```
@@ -1270,7 +1270,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(3).overflowing_pow(5), (u256::new(243), false));
     /// assert_eq!(
     ///     u256::new(1337).overflowing_pow(42),
@@ -1324,7 +1324,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(2).pow(5), u256::new(32));
     /// ```
     #[must_use = "this returns the result of the operation, \
@@ -1366,7 +1366,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(7).div_euclid(u256::new(4)), u256::new(1));
     /// ```
     #[must_use = "this returns the result of the operation, \
@@ -1390,7 +1390,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(7).rem_euclid(u256::new(4)), u256::new(3));
     /// ```
     #[must_use = "this returns the result of the operation, \
@@ -1407,7 +1407,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert!(u256::new(16).is_power_of_two());
     /// assert!(!u256::new(10).is_power_of_two());
     /// ```
@@ -1447,7 +1447,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(2).next_power_of_two(), u256::new(2));
     /// assert_eq!(u256::new(3).next_power_of_two(), u256::new(4));
     /// ```
@@ -1465,7 +1465,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(2).checked_next_power_of_two(), Some(u256::new(2)));
     /// assert_eq!(u256::new(3).checked_next_power_of_two(), Some(u256::new(4)));
     /// assert_eq!(u256::MAX.checked_next_power_of_two(), None);
@@ -1485,7 +1485,7 @@ impl u256 {
     /// Basic usage:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// assert_eq!(u256::new(2).wrapping_next_power_of_two(), u256::new(2));
     /// assert_eq!(u256::new(3).wrapping_next_power_of_two(), u256::new(4));
     /// assert_eq!(u256::MAX.wrapping_next_power_of_two(), u256::ZERO);
@@ -1502,7 +1502,7 @@ impl u256 {
     /// # Examples
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let bytes = u256::from_words(
     ///     0x00010203_04050607_08090a0b_0c0d0e0f,
     ///     0x10111213_14151617_18191a1b_1c1d1e1f,
@@ -1526,7 +1526,7 @@ impl u256 {
     /// # Examples
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let bytes = u256::from_words(
     ///     0x00010203_04050607_08090a0b_0c0d0e0f,
     ///     0x10111213_14151617_18191a1b_1c1d1e1f,
@@ -1556,7 +1556,7 @@ impl u256 {
     /// # Examples
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let bytes = u256::from_words(
     ///     0x00010203_04050607_08090a0b_0c0d0e0f,
     ///     0x10111213_14151617_18191a1b_1c1d1e1f,
@@ -1587,7 +1587,7 @@ impl u256 {
     /// # Examples
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let value = u256::from_be_bytes([
     ///     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
     ///     0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
@@ -1605,7 +1605,7 @@ impl u256 {
     /// APIs can be used:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// use std::convert::TryInto;
     ///
     /// fn read_be_u256(input: &mut &[u8]) -> u256 {
@@ -1625,7 +1625,7 @@ impl u256 {
     /// # Examples
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let value = u256::from_le_bytes([
     ///     0x1f, 0x1e, 0x1d, 0x1c, 0x1b, 0x1a, 0x19, 0x18, 0x17, 0x16, 0x15, 0x14, 0x13, 0x12, 0x11, 0x10,
     ///     0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00,
@@ -1643,7 +1643,7 @@ impl u256 {
     /// APIs can be used:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// use std::convert::TryInto;
     ///
     /// fn read_be_u256(input: &mut &[u8]) -> u256 {
@@ -1670,7 +1670,7 @@ impl u256 {
     /// # Examples
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// let value = u256::from_ne_bytes(if cfg!(target_endian = "big") {
     ///     [
     ///         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
@@ -1695,7 +1695,7 @@ impl u256 {
     /// APIs can be used:
     ///
     /// ```
-    /// # use ethrs_num::u256;
+    /// # use ethnum::u256;
     /// use std::convert::TryInto;
     ///
     /// fn read_be_u256(input: &mut &[u8]) -> u256 {

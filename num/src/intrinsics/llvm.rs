@@ -24,7 +24,7 @@ macro_rules! def {
             #[allow(improper_ctypes)]
             extern "C" {
                 link! {
-                    concat!("__ethrs_num_", stringify!($name));
+                    concat!("__ethnum_", stringify!($name));
                     fn $name(
                         $($p: $t,)*
                     ) $(-> $ret)?;

@@ -4,7 +4,7 @@
 //! to allow notation such as:
 //!
 //! ```
-//! # use ethrs_num::u256;
+//! # use ethnum::u256;
 //! assert_eq!(u256::new(42), 42);
 //! assert!(u256::ONE > 0 && u256::ZERO == 0);
 //! ```

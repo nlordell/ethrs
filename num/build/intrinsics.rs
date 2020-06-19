@@ -14,7 +14,7 @@ macro_rules! def {
         ) $(-> $ret:ty)? $impl:block
     )*) => {$(
         export! {
-            name = concat!("__ethrs_num_", stringify!($name));
+            name = concat!("__ethnum_", stringify!($name));
             pub unsafe extern "C" fn $name(
                 $($p: $t,)*
             ) $(-> $ret)? {
