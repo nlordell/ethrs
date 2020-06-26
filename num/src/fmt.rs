@@ -180,7 +180,7 @@ pub(crate) fn fmt_radix(
             #[cfg(debug_assertions)]
             let digit = digits[n];
             #[cfg(not(debug_assertions))]
-            let digit = digits.get_unchecked(n);
+            let digit = *digits.get_unchecked(n);
 
             byte.as_mut_ptr().write(digit); // Store the digit in the buffer.
         };

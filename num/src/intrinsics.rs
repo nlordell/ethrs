@@ -4,14 +4,14 @@
 
 #![allow(missing_docs)]
 
-#[cfg(generate_intrinsics)]
+#[cfg(feature = "llvm-intrinsics")]
 mod llvm;
-#[cfg(not(generate_intrinsics))]
+#[cfg(not(feature = "llvm-intrinsics"))]
 mod native;
 
-#[cfg(generate_intrinsics)]
+#[cfg(feature = "llvm-intrinsics")]
 pub use self::llvm::*;
-#[cfg(not(generate_intrinsics))]
+#[cfg(not(feature = "llvm-intrinsics"))]
 pub use self::native::*;
 
 #[cfg(test)]

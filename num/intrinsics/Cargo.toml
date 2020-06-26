@@ -1,0 +1,10 @@
+[package]
+name = "ethnum-intrinsics"
+version = "1.0.0"
+authors = ["Nicholas Rodrigues Lordello <nicholas.lordello@gnosis.pm>"]
+edition = "2018"
+build = "build/main.rs"
+links = "ethnum"
+
+[build-dependencies]
+cc = "^1.0.55"

@@ -1,14 +1,9 @@
-//! This module contains definitions for LLVM IR generated intrinsics.
+//! This crate contains LLVM generated intrinsics for 256-bit unsigned integer
+//! operations.
 
-// NOTE: LLVM IR generated intrinsics for `udiv i256` and `urem i256` produce an
-// error when compiling, so use the native `divmod` implementation even when
-// generated intrinsics are enabled.
-#[path = "native/divmod.rs"]
-mod divmod;
+use std::mem::MaybeUninit;
 
-pub use self::divmod::*;
-use crate::U256;
-use std::mem::{self, MaybeUninit};
+pub type U256 = [u128; 2];
 
 macro_rules! def {
     ($(
@@ -16,19 +11,24 @@ macro_rules! def {
         pub fn $name:ident(
             $($p:ident : $t:ty),*
         ) $(-> $ret:ty)?;
-    )*) => {$(
-        $(#[$a])*
-        pub fn $name(
-            $($p: $t,)*
-        ) $(-> $ret)? {
-            unsafe {
-                ethnum_intrinsics::$name($(
-                    #[allow(clippy::transmute_ptr_to_ptr)]
-                    mem::transmute($p)
-                ),*)
+    )*) => {
+        #[allow(improper_ctypes)]
+        extern "C" {$(
+            link! {
+                concat!("__ethnum_", stringify!($name));
+                pub fn $name(
+                    $($p: $t,)*
+                ) $(-> $ret)?;
             }
-        }
-    )*};
+        )*}
+    };
+}
+
+macro_rules! link {
+    ($sym:expr; $fn:item) => {
+        #[link_name = $sym]
+        $fn
+    };
 }
 
 def! {

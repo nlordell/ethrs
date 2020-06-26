@@ -10,6 +10,8 @@ lto = true
 [workspace]
 members = [
   "num",
+  "num/bench",
+  "num/intrinsics",
   "transport/common",
   "transport/http",
   "transport/mock",

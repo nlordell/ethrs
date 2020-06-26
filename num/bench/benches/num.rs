@@ -4,9 +4,9 @@ use std::ops::*;
 
 fn arithmetic<U>(c: &mut Criterion)
 where
-    U: Add + Mul + Sub + Shl + Shr + Copy + From<u128>,
+    U: Add + Mul + Sub + Shl<Output = U> + Shr + Copy + From<u128>,
 {
-    let value = U::from(u128::MAX);
+    let value = U::from(u128::MAX) << U::from(11);
 
     c.bench_function(&format!("{}::add", any::type_name::<U>()), |b| {
         b.iter(|| black_box(value) + black_box(value))
@@ -30,7 +30,7 @@ where
 }
 
 fn intrinsics(c: &mut Criterion) {
-    let value = ethnum::U256::new(u128::MAX) << 2u32;
+    let value = ethnum::U256::new(u128::MAX) << 11u32;
 
     c.bench_function("ethnum::U256::rotate_left", |b| {
         b.iter(|| black_box(value).rotate_left(black_box(21)))

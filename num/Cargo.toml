@@ -1,19 +1,11 @@
 [package]
 name = "ethnum"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Nicholas Rodrigues Lordello <nicholas.lordello@gnosis.pm>"]
 edition = "2018"
-build = "build/main.rs"
 
-[[bench]]
-name = "num"
-harness = false
+[features]
+llvm-intrinsics = ["ethnum-intrinsics"]
 
 [dependencies]
-
-[dev-dependencies]
-criterion = "^0.3.2"
-primitive-types = "^0.7.2"
-
-[build-dependencies]
-cc = "^1.0.52"
+ethnum-intrinsics = { version = "1.0.0", path = "intrinsics", optional = true }
