@@ -3,8 +3,8 @@
 use crate::fmt;
 use crate::intrinsics;
 use crate::U256;
-use std::mem::{self, MaybeUninit};
-use std::num::ParseIntError;
+use core::mem::{self, MaybeUninit};
+use core::num::ParseIntError;
 
 impl U256 {
     /// The smallest value that can be represented by this integer type.

@@ -10,7 +10,7 @@
 //! ```
 
 use crate::U256;
-use std::cmp::Ordering;
+use core::cmp::Ordering;
 
 impl PartialOrd for U256 {
     #[inline]

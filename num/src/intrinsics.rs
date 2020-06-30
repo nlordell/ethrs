@@ -18,7 +18,7 @@ pub use self::native::*;
 mod tests {
     use super::*;
     use crate::U256;
-    use std::mem::MaybeUninit;
+    use core::mem::MaybeUninit;
 
     #[test]
     fn unchecked_addition() {

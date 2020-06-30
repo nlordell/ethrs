@@ -1,7 +1,7 @@
 //! Module containing arithmetic left shift intrinsic.
 
 use crate::U256;
-use std::mem::MaybeUninit;
+use core::mem::MaybeUninit;
 
 #[inline]
 pub fn shl2(r: &mut U256, a: u32) {

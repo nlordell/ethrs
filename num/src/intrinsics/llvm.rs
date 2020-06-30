@@ -8,7 +8,7 @@ mod divmod;
 
 pub use self::divmod::*;
 use crate::U256;
-use std::mem::{self, MaybeUninit};
+use core::mem::{self, MaybeUninit};
 
 macro_rules! def {
     ($(

@@ -1,8 +1,8 @@
 //! Module contains conversions for [`U256`] to and from primimitive types.
 
 use crate::U256;
-use std::convert::{TryFrom, TryInto};
-use std::num::TryFromIntError;
+use core::convert::{TryFrom, TryInto};
+use core::num::TryFromIntError;
 
 macro_rules! impl_from {
     ($($t:ty),* $(,)?) => {$(

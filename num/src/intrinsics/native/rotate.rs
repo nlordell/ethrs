@@ -2,7 +2,7 @@
 //! for 256-bit integers.
 
 use crate::U256;
-use std::mem::MaybeUninit;
+use core::mem::MaybeUninit;
 
 #[inline]
 pub fn rotate_left(r: &mut MaybeUninit<U256>, a: &U256, b: u32) {

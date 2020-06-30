@@ -1,7 +1,7 @@
 //! Module containing logical right shift intrinsic.
 
 use crate::U256;
-use std::mem::MaybeUninit;
+use core::mem::MaybeUninit;
 
 #[inline]
 pub fn shr2(r: &mut U256, a: u32) {

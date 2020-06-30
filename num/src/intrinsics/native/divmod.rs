@@ -9,7 +9,7 @@
 //! https://github.com/llvm/llvm-project/blob/master/compiler-rt/lib/builtins/udivmodti4.c
 
 use crate::{AsU256, U256};
-use std::mem::MaybeUninit;
+use core::mem::MaybeUninit;
 
 #[allow(clippy::many_single_char_names)]
 pub fn udivmod4(

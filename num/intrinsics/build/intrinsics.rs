@@ -5,7 +5,7 @@
 //! on functions and parameters are as accurate as possible for the resulting
 //! IR, allowing for better optimizations when using plugin LTO optimizations.
 
-use std::mem::MaybeUninit;
+use core::mem::MaybeUninit;
 
 macro_rules! def {
     ($(

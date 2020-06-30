@@ -1,8 +1,8 @@
 //! Module contains iterator specific trait implementations.
 
 use crate::U256;
-use std::iter::{Product, Sum};
-use std::ops::{Add, Mul};
+use core::iter::{Product, Sum};
+use core::ops::{Add, Mul};
 
 impl Sum for U256 {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
@@ -28,4 +28,4 @@ impl<'a> Product<&'a U256> for U256 {
     }
 }
 
-// TODO(nlordell): Implement `std::iter::Step` once it stabilizes.
+// TODO(nlordell): Implement `core::iter::Step` once it stabilizes.

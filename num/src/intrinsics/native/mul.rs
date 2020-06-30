@@ -8,7 +8,7 @@
 //! https://github.com/llvm/llvm-project/blob/master/compiler-rt/lib/builtins/multi3.c
 
 use crate::U256;
-use std::mem::MaybeUninit;
+use core::mem::MaybeUninit;
 
 #[inline]
 pub fn mulddi3(a: &u128, b: &u128) -> U256 {

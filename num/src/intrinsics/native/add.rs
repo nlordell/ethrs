@@ -1,7 +1,7 @@
 //! Module implementing addition intrinsics.
 
 use crate::U256;
-use std::mem::MaybeUninit;
+use core::mem::MaybeUninit;
 
 #[inline]
 pub fn add2(r: &mut U256, a: &U256) {

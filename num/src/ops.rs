@@ -1,8 +1,8 @@
-//! Module containing macros for implementing `std::ops` traits.
+//! Module containing macros for implementing `core::ops` traits.
 
 use crate::intrinsics::*;
 use crate::U256;
-use std::mem::MaybeUninit;
+use core::mem::MaybeUninit;
 
 macro_rules! impl_binops {
     ($(
@@ -12,7 +12,7 @@ macro_rules! impl_binops {
             $overflow:path; $msg:expr
         }
     )*) => {$(
-        impl std::ops::$op<&'_ U256> for &'_ U256 {
+        impl core::ops::$op<&'_ U256> for &'_ U256 {
             type Output = U256;
 
             #[inline]
@@ -65,12 +65,12 @@ macro_rules! impl_ref_binop {
             <$rhs:ty> for $lhs:ty => $conv:block
         )*}
     ) => {$(
-        impl std::ops::$op<$rhs> for $lhs {
+        impl core::ops::$op<$rhs> for $lhs {
             type Output = U256;
 
             #[inline]
             fn $method(self, $x: $rhs) -> Self::Output {
-                <$ref as std::ops::$op<$tr>>::$method(&self, $conv)
+                <$ref as core::ops::$op<$tr>>::$method(&self, $conv)
             }
         }
     )*};
@@ -96,7 +96,7 @@ impl_binops! {
     Sub { sub => sub3, subc; "subtract with overflow" }
 }
 
-impl std::ops::Div for &'_ U256 {
+impl core::ops::Div for &'_ U256 {
     type Output = U256;
 
     #[inline]
@@ -113,7 +113,7 @@ impl std::ops::Div for &'_ U256 {
 
 impl_auto_binop!(Div { div });
 
-impl std::ops::Rem for &'_ U256 {
+impl core::ops::Rem for &'_ U256 {
     type Output = U256;
 
     #[inline]
@@ -137,7 +137,7 @@ macro_rules! impl_shifts {
             $wrap:path; $msg:expr
         }
     )*) => {$(
-        impl std::ops::$op<u32> for &'_ U256 {
+        impl core::ops::$op<u32> for &'_ U256 {
             type Output = U256;
 
             #[inline]
@@ -186,7 +186,7 @@ impl_shifts! {
     Shr { shr => shr3; "shift right with overflow" }
 }
 
-impl std::ops::Not for U256 {
+impl core::ops::Not for U256 {
     type Output = U256;
 
     #[inline]
@@ -196,7 +196,7 @@ impl std::ops::Not for U256 {
     }
 }
 
-impl std::ops::Not for &'_ U256 {
+impl core::ops::Not for &'_ U256 {
     type Output = U256;
 
     #[inline]
@@ -210,7 +210,7 @@ macro_rules! impl_bitwiseops {
     ($(
         $op:ident { $method:ident }
     )*) => {$(
-        impl std::ops::$op<&'_ U256> for &'_ U256 {
+        impl core::ops::$op<&'_ U256> for &'_ U256 {
             type Output = U256;
 
             #[inline]
@@ -239,7 +239,7 @@ macro_rules! impl_binops_assign {
             $binop:tt
         }
     )*) => {$(
-        impl std::ops::$op<&'_ U256> for U256 {
+        impl core::ops::$op<&'_ U256> for U256 {
             #[inline]
             fn $method(&mut self, rhs: &'_ U256) {
                 binop_assign!($wrap, $binop [ self, rhs ])
@@ -283,10 +283,10 @@ macro_rules! impl_ref_binop_assign {
             <$rhs:ty> for U256 => $conv:block
         )*}
     ) => {$(
-        impl std::ops::$op<$rhs> for U256 {
+        impl core::ops::$op<$rhs> for U256 {
             #[inline]
             fn $method(&mut self, $x: $rhs) {
-                <$ref as std::ops::$op<$tr>>::$method(self, $conv)
+                <$ref as core::ops::$op<$tr>>::$method(self, $conv)
             }
         }
     )*};
@@ -319,7 +319,7 @@ macro_rules! impl_shifts_assign {
                 $wrap:path, $sh:tt
         }
     )*) => {$(
-        impl std::ops::$op<u32> for U256 {
+        impl core::ops::$op<u32> for U256 {
             #[inline]
             fn $method(&mut self, rhs: u32) {
                 binop_assign!($wrap, $sh [ self, rhs ])
@@ -354,7 +354,7 @@ macro_rules! impl_bitwiseops_assign {
     ($(
         $op:ident { $method:ident }
     )*) => {$(
-        impl std::ops::$op<&'_ U256> for U256 {
+        impl core::ops::$op<&'_ U256> for U256 {
             #[inline]
             fn $method(&mut self, rhs: &'_ U256) {
                 let U256([a, b]) = self;
@@ -377,7 +377,7 @@ impl_bitwiseops_assign! {
 #[cfg(test)]
 mod tests {
     use crate::U256;
-    use std::ops::*;
+    use core::ops::*;
 
     #[test]
     fn trait_implementations() {

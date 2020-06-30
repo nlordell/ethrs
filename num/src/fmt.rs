@@ -5,12 +5,12 @@
 //! https://doc.rust-lang.org/src/core/fmt/num.rs.html
 
 use crate::{AsU256, U256};
-use std::fmt;
-use std::mem::MaybeUninit;
-use std::num::ParseIntError;
-use std::ptr;
-use std::slice;
-use std::str::{self, FromStr};
+use core::fmt;
+use core::mem::{self, MaybeUninit};
+use core::num::ParseIntError;
+use core::ptr;
+use core::slice;
+use core::str::{self, FromStr};
 
 /// Converts a string slice in a given base to an `U256`.
 pub(crate) fn from_str_radix(src: &str, radix: u32) -> Result<U256, ParseIntError> {
@@ -53,7 +53,7 @@ enum Pie {
 
 impl Into<ParseIntError> for Pie {
     fn into(self) -> ParseIntError {
-        unsafe { std::mem::transmute(self) }
+        unsafe { mem::transmute(self) }
     }
 }
 
@@ -249,12 +249,16 @@ impl fmt::UpperExp for U256 {
 #[cfg(test)]
 mod test {
     use super::*;
+    use alloc::format;
 
     #[test]
     fn parse_int_error() {
         assert_eq!(U256::from_str_radix("", 2), Err(Pie::Empty.into()));
         assert_eq!(U256::from_str_radix("?", 2), Err(Pie::InvalidDigit.into()));
-        assert_eq!(U256::from_str_radix("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", 36), Err(Pie::Overflow.into()));
+        assert_eq!(
+            U256::from_str_radix("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", 36),
+            Err(Pie::Overflow.into())
+        );
     }
 
     #[test]
