@@ -1,7 +1,9 @@
 //! This crate contains LLVM generated intrinsics for 256-bit unsigned integer
 //! operations.
 
-use std::mem::MaybeUninit;
+#![no_std]
+
+use core::mem::MaybeUninit;
 
 pub type U256 = [u128; 2];
 

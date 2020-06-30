@@ -2,7 +2,6 @@
 name = "ethnum-bench"
 version = "0.0.0"
 publish = false
-authors = ["Nicholas Rodrigues Lordello <nicholas.lordello@gnosis.pm>"]
 edition = "2018"
 
 [[bench]]
@@ -14,5 +13,5 @@ llvm-intrinsics = ["ethnum/llvm-intrinsics"]
 
 [dependencies]
 ethnum = { path = ".." }
-criterion = "^0.3.2"
-primitive-types = "^0.7.2"
+criterion = "0.3.3"
+primitive-types = "0.7.2"
