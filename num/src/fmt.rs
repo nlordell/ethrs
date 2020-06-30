@@ -52,6 +52,7 @@ enum Pie {
 }
 
 impl Into<ParseIntError> for Pie {
+    #[inline]
     fn into(self) -> ParseIntError {
         unsafe { mem::transmute(self) }
     }
@@ -60,6 +61,7 @@ impl Into<ParseIntError> for Pie {
 impl FromStr for U256 {
     type Err = ParseIntError;
 
+    #[inline]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         from_str_radix(s, 10)
     }
