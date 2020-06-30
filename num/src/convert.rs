@@ -95,11 +95,7 @@ impl_as_u256! {
 impl AsU256 for bool {
     #[inline]
     fn as_u256(self) -> U256 {
-        if self {
-            U256::ONE
-        } else {
-            U256::ZERO
-        }
+        U256::new(self as _)
     }
 }
 
@@ -166,8 +162,7 @@ macro_rules! impl_try_into {
 
             #[inline]
             fn try_into(self) -> Result<$t, Self::Error> {
-                let (hi, lo) = self.into_words();
-                let x = if hi != 0 { u128::MAX } else { lo };
+                let x = TryInto::<u128>::try_into(self)?;
                 x.try_into()
             }
         }
