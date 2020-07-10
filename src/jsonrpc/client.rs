@@ -1,21 +1,21 @@
 //! Module containing transport agnostic JSON RPC client implementation.
 
 use super::data::{self, Id, Request, Response, Version};
-use crate::fmt::Dbg;
 use crate::transport::Transport;
-use lifeguard::{MaxSize, Pool, Supplier};
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use std::error::Error;
 use std::sync::atomic::{AtomicU32, Ordering};
 use thiserror::Error;
 
+/// Default buffer size used for writing response bytes.
+const BUFFER_SIZE: usize = 1024;
+
 /// A JSON RPC client over a generic simplex transport.
 #[derive(Debug)]
 pub struct Client<T> {
     transport: T,
     current_id: AtomicU32,
-    buffer_pool: Dbg<Pool<Vec<u8>>>,
 }
 
 impl<T> Client<T> {
@@ -24,11 +24,6 @@ impl<T> Client<T> {
         Client {
             transport,
             current_id: Default::default(),
-            buffer_pool: lifeguard::pool()
-                .with(MaxSize(128))
-                .with(Supplier(|| Vec::with_capacity(1024)))
-                .build()
-                .into(),
         }
     }
 }
@@ -42,21 +37,17 @@ where
         P: Serialize,
         R: DeserializeOwned,
     {
-        let mut request_buffer = self.buffer_pool.new();
         let id = self.current_id.fetch_add(1, Ordering::SeqCst);
-        serde_json::to_writer(
-            &mut *request_buffer,
-            &Request {
-                jsonrpc: Version::V2,
-                method,
-                params,
-                id: Id(id),
-            },
-        )?;
+        let request_buffer = serde_json::to_vec(&Request {
+            jsonrpc: Version::V2,
+            method,
+            params,
+            id: Id(id),
+        })?;
 
-        let mut response_buffer = self.buffer_pool.new();
+        let mut response_buffer = Vec::with_capacity(BUFFER_SIZE);
         self.transport
-            .call(&*request_buffer, &mut *response_buffer)
+            .call(&*request_buffer, &mut response_buffer)
             .await
             .map_err(ClientError::Transport)?;
 

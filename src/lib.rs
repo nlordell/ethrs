@@ -9,11 +9,11 @@
 //!   black magic of macros.
 //! - *WASM-Ready* and should Just Work (tm) with WASM.
 
-//#![deny(missing_docs)]
+// TODO(nlordell): Renable this option.
+//#![deny(missing_docs, unsafe_code)]
 
 #[macro_use]
 pub mod ethereum;
-mod fmt;
 pub mod jsonrpc;
 pub mod transport;
 
