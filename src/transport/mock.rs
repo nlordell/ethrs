@@ -1,7 +1,7 @@
 //! This crate provides a mock [`ethrs::transport::Transport`] implementation
 //! that can be used for unit testing.
 
-use ethrs_transport_common::Transport;
+use crate::transport::Transport;
 use serde_json::{json, Value};
 use std::collections::VecDeque;
 use std::future::Future;

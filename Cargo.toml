@@ -12,20 +12,18 @@ members = [
   "num",
   "num/bench",
   "num/intrinsics",
-  "transport/common",
+  "transport",
   "transport/http",
-  "transport/mock",
 ]
 
 [features]
 default = ["http", "mock"]
 http = ["ethrs-transport-http"]
-mock = ["ethrs-transport-mock"]
+mock = []
 
 [dependencies]
-ethrs-transport-common = { path = "transport/common", version = "0.1.0" }
+ethrs-transport = { path = "transport", version = "0.1.0" }
 ethrs-transport-http = { path = "transport/http", version = "0.1.0", optional = true }
-ethrs-transport-mock = { path = "transport/mock", version = "0.1.0", optional = true }
 hex = "^0.4.2"
 lifeguard = "^0.6.0"
 serde = { version = "^1.0.106", features = ["derive"] }

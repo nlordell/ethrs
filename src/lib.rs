@@ -15,18 +15,6 @@
 pub mod ethereum;
 mod fmt;
 pub mod jsonrpc;
+pub mod transport;
 
 pub use ethereum::Web3;
-
-/// Module re-exporting transport implementations included via features.
-pub mod transport {
-    pub use ethrs_transport_common::*;
-
-    #[cfg(feature = "http")]
-    pub use ethrs_transport_http as http;
-
-    #[cfg(feature = "mock")]
-    pub use ethrs_transport_mock as mock;
-    #[cfg(feature = "mock")]
-    pub use ethrs_transport_mock::MockTransport;
-}
