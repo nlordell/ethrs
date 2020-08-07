@@ -1,8 +1,7 @@
 //! This module contains trait and type definitions needed for implementing
 //! `ethrs` transports.
 
-use std::error::Error;
-use std::future::Future;
+use std::{error::Error, fmt::Display, future::Future};
 
 /// A trait to represent a simplex transport that can be used perform JSON RPC
 /// calls where the transport layer garantees that the requests and responses
@@ -20,4 +19,17 @@ pub trait Transport {
     /// Perform a JSON RPC call over this transport by sending the serialized
     /// `request` bytes and receive the result into `response` buffer.
     fn call(&mut self, request: &[u8], response: &mut Vec<u8>) -> Self::Call;
+}
+
+/// In development.
+pub trait Transport2<'a> {
+    /// Error type that this transport produces.
+    type Error: Display;
+
+    /// Future returned by the `call` method.
+    type Call: Future<Output = Result<Vec<u8>, Self::Error>>;
+
+    /// Perform a JSON RPC call over this transport by sending the serialized
+    /// `request` bytes and receive the result into `response` buffer.
+    fn call(&'a self, request: &'a [u8]) -> Self::Call;
 }
