@@ -8,9 +8,30 @@ use core::num::ParseIntError;
 
 impl U256 {
     /// The smallest value that can be represented by this integer type.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use ethnum::U256;
+    /// assert_eq!(U256::MIN, U256::new(0));
+    /// ```
     pub const MIN: Self = U256([0; 2]);
 
     /// The largest value that can be represented by this integer type.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use ethnum::U256;
+    /// assert_eq!(
+    ///     U256::MAX.to_string(),
+    ///     "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+    /// );
+    /// ```
     pub const MAX: Self = U256([!0; 2]);
 
     /// Converts a string slice in a given base to an integer.
@@ -52,7 +73,7 @@ impl U256 {
     /// assert_eq!(n.count_ones(), 3);
     /// ```
     #[inline]
-    pub fn count_ones(self) -> u32 {
+    pub const fn count_ones(self) -> u32 {
         let U256([a, b]) = self;
         a.count_ones() + b.count_ones()
     }
@@ -69,7 +90,7 @@ impl U256 {
     /// assert_eq!(U256::MAX.count_zeros(), 0);
     /// ```
     #[inline]
-    pub fn count_zeros(self) -> u32 {
+    pub const fn count_zeros(self) -> u32 {
         let U256([a, b]) = self;
         a.count_zeros() + b.count_zeros()
     }
@@ -1474,26 +1495,6 @@ impl U256 {
     pub fn checked_next_power_of_two(self) -> Option<Self> {
         self.one_less_than_next_power_of_two()
             .checked_add(U256::ONE)
-    }
-
-    /// Returns the smallest power of two greater than or equal to `n`. If the
-    /// next power of two is greater than the type's maximum value, the return
-    /// value is wrapped to `0`.
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// # use ethnum::U256;
-    /// assert_eq!(U256::new(2).wrapping_next_power_of_two(), U256::new(2));
-    /// assert_eq!(U256::new(3).wrapping_next_power_of_two(), U256::new(4));
-    /// assert_eq!(U256::MAX.wrapping_next_power_of_two(), U256::ZERO);
-    /// ```
-    #[inline]
-    pub fn wrapping_next_power_of_two(self) -> Self {
-        self.one_less_than_next_power_of_two()
-            .wrapping_add(U256::ONE)
     }
 
     /// Return the memory representation of this integer as a byte array in big
