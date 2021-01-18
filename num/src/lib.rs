@@ -21,7 +21,7 @@ mod uint;
 pub use self::convert::AsU256;
 
 /// A 256-bit unsigned integer type.
-#[derive(Clone, Copy, Default, Eq, Hash, Ord, PartialEq)]
+#[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
 #[repr(transparent)]
 pub struct U256(pub [u128; 2]);
 
